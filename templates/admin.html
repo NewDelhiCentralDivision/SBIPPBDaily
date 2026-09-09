@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - New Delhi Central Division Savings Monitor</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="header-bar">
+    <div class="brand-section">
+      <div class="brand-icon">ADMIN</div>
+      <div>
+        <div class="brand-title">New Delhi Central Division – Executive Dashboard</div>
+        <div class="brand-sub">Daily Savings & IPPB Performance Live Monitoring</div>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="/" class="nav-btn">📝 Office Entry Portal</a>
+      <a href="/report?date={{ report_date }}" class="nav-btn">📱 WhatsApp Card</a>
+      <button onclick="downloadCSV()" class="nav-btn">📥 Export CSV</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Date Selector & Live Status Header -->
+    <div class="card" style="padding: 16px 24px; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label for="adminDateSelect" style="margin: 0; font-weight: 700;">Reporting Date:</label>
+          <input type="date" id="adminDateSelect" class="form-control" style="width: auto; padding: 6px 12px;" value="{{ report_date }}" onchange="handleAdminDateChange()">
+          <button class="btn btn-outline" style="padding: 6px 14px;" onclick="location.reload()">🔄 Refresh</button>
+        </div>
+        <div style="font-size: 0.9rem; color: var(--text-muted);">
+          Operational Units: <strong>{{ data.metrics.total_offices }} Offices</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="stats-grid">
+      <div class="stat-card stat-info">
+        <div class="stat-label">Total Operational Offices</div>
+        <div class="stat-val">{{ data.metrics.total_offices }}</div>
+        <div class="stat-sub">Divisional Target</div>
+      </div>
+
+      <div class="stat-card stat-success">
+        <div class="stat-label">Offices Submitted</div>
+        <div class="stat-val" style="color: var(--success);">{{ data.metrics.submitted_count }}</div>
+        <div class="stat-sub">{{ data.metrics.completion_pct }}% Completion</div>
+      </div>
+
+      <div class="stat-card stat-danger">
+        <div class="stat-label">Offices Pending</div>
+        <div class="stat-val" style="color: var(--danger);">{{ data.metrics.pending_count }}</div>
+        <div class="stat-sub">Action required</div>
+      </div>
+
+      <div class="stat-card stat-warning">
+        <div class="stat-label">Savings Accounts</div>
+        <div class="stat-val">{{ data.metrics.total_savings_opened }} <span style="font-size:1.1rem; color:var(--text-muted);">/ {{ data.metrics.total_savings_closed }}</span></div>
+        <div class="stat-sub">Opened / Closed</div>
+      </div>
+
+      <div class="stat-card stat-info">
+        <div class="stat-label">IPPB Accounts & Activities</div>
+        <div class="stat-val">{{ data.metrics.total_ippb_opened }} <span style="font-size:1.1rem; color:var(--text-muted);">/ {{ data.metrics.total_ippb_achievements }}</span></div>
+        <div class="stat-sub">A/Cs Opened / Services</div>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="card" style="padding: 16px 20px; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; font-size: 0.88rem; font-weight: 700; margin-bottom: 4px;">
+        <span>Division Reporting Progress</span>
+        <span>{{ data.metrics.submitted_count }} of {{ data.metrics.total_offices }} Submitted ({{ data.metrics.completion_pct }}%)</span>
+      </div>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" style="width: {{ data.metrics.completion_pct }}%;"></div>
+      </div>
+    </div>
+
+    <!-- Pending Offices Follow-up Section -->
+    <div class="card" style="border-left: 6px solid var(--danger);">
+      <div class="card-title">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="color: var(--danger);">⏳ Pending Offices for {{ report_date }} ({{ data.metrics.pending_count }})</span>
+        </div>
+        <button class="btn btn-outline" style="font-size: 0.85rem; padding: 6px 14px; border-color: var(--danger); color: var(--danger);" onclick="copyPendingForWhatsApp()">
+          📋 Copy Pending Offices for WhatsApp
+        </button>
+      </div>
+
+      {% if data.pending_offices %}
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 12px;">
+        The following offices have not yet submitted today's Daily Savings Performance figures. Click "Copy Pending Offices" to paste the alert list directly into the Division WhatsApp group.
+      </p>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        {% for po in data.pending_offices %}
+        <span class="badge badge-danger" style="font-size: 0.82rem; padding: 6px 10px;">
+          ❌ {{ po.office_name }} <small style="opacity: 0.8;">({{ po.hpo_group }})</small>
+        </span>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="alert alert-success" style="margin-bottom: 0;">
+        🎉 <strong>100% Complete!</strong> All 55 operational offices have submitted their reports for this date.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Consolidated Product-wise Performance Table -->
+    <div class="card">
+      <div class="card-title">
+        <span>📊 Division Consolidated Performance Summary</span>
+        <a href="/report?date={{ report_date }}" class="btn btn-primary" style="font-size: 0.85rem; padding: 6px 14px;">
+          📱 Open WhatsApp Report Card
+        </a>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table class="entry-table">
+          <thead>
+            <tr>
+              <th>Scheme / Product Name</th>
+              <th>Section</th>
+              <th style="text-align: center;">Total Opened</th>
+              <th style="text-align: center;">Total Closed</th>
+              <th style="text-align: center;">Net Addition / Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- POSB Products -->
+            <tr style="background: #FFF1F2; font-weight: 700;">
+              <td colspan="5" style="color: var(--primary); font-size: 0.85rem; letter-spacing: 0.5px;">
+                SAVINGS BANK (POSB) PRODUCTS
+              </td>
+            </tr>
+            {% for p in data.consolidated_products %}
+              {% if p.section == 'SAVINGS' %}
+              <tr>
+                <td><strong>{{ p.name }}</strong> ({{ p.short_name }})</td>
+                <td><span class="badge badge-success">POSB</span></td>
+                <td style="text-align: center; font-weight: 600;">
+                  {% if p.entry_mode == 'CLOSED_ONLY' %}--{% else %}{{ p.total_opened }}{% endif %}
+                </td>
+                <td style="text-align: center; font-weight: 600;">{{ p.total_closed }}</td>
+                <td style="text-align: center; font-weight: 700; color: #1E293B;">
+                  {% if p.entry_mode == 'CLOSED_ONLY' %}-{{ p.total_closed }}{% else %}{{ p.total_opened - p.total_closed }}{% endif %}
+                </td>
+              </tr>
+              {% endif %}
+            {% endfor %}
+            <tr style="background: #FFE4E6; font-weight: 800; border-top: 2px solid var(--primary);">
+              <td>TOTAL SAVINGS / POSB</td>
+              <td><span class="badge badge-success">TOTAL</span></td>
+              <td style="text-align: center; font-size: 1.1rem; color: var(--primary);">{{ data.metrics.total_savings_opened }}</td>
+              <td style="text-align: center; font-size: 1.1rem; color: #991B1B;">{{ data.metrics.total_savings_closed }}</td>
+              <td style="text-align: center; font-size: 1.1rem;">{{ data.metrics.total_savings_opened - data.metrics.total_savings_closed }}</td>
+            </tr>
+
+            <!-- IPPB Accounts -->
+            <tr style="background: #FEF3C7; font-weight: 700;">
+              <td colspan="5" style="color: #92400E; font-size: 0.85rem; letter-spacing: 0.5px;">
+                IPPB ACCOUNTS
+              </td>
+            </tr>
+            {% for p in data.consolidated_products %}
+              {% if p.section == 'IPPB' and p.entry_mode == 'OPENED_AND_CLOSED' %}
+              <tr>
+                <td><strong>{{ p.name }}</strong> ({{ p.short_name }})</td>
+                <td><span class="badge badge-warning">IPPB A/C</span></td>
+                <td style="text-align: center; font-weight: 600;">{{ p.total_opened }}</td>
+                <td style="text-align: center; font-weight: 600;">{{ p.total_closed }}</td>
+                <td style="text-align: center; font-weight: 700; color: #1E293B;">{{ p.total_opened - p.total_closed }}</td>
+              </tr>
+              {% endif %}
+            {% endfor %}
+            <tr style="background: #FDE68A; font-weight: 800;">
+              <td>TOTAL IPPB ACCOUNTS</td>
+              <td><span class="badge badge-warning">TOTAL</span></td>
+              <td style="text-align: center; font-size: 1.1rem; color: #B45309;">{{ data.metrics.total_ippb_opened }}</td>
+              <td style="text-align: center; font-size: 1.1rem; color: #991B1B;">{{ data.metrics.total_ippb_closed }}</td>
+              <td style="text-align: center; font-size: 1.1rem;">{{ data.metrics.total_ippb_opened - data.metrics.total_ippb_closed }}</td>
+            </tr>
+
+            <!-- IPPB Activities -->
+            <tr style="background: #EFF6FF; font-weight: 700;">
+              <td colspan="5" style="color: #1E40AF; font-size: 0.85rem; letter-spacing: 0.5px;">
+                IPPB SERVICES & BUSINESS ACTIVITIES
+              </td>
+            </tr>
+            {% for p in data.consolidated_products %}
+              {% if p.section == 'IPPB' and p.entry_mode == 'ACHIEVEMENT_COUNT' %}
+              <tr>
+                <td><strong>{{ p.name }}</strong></td>
+                <td><span class="badge badge-info">IPPB Service</span></td>
+                <td style="text-align: center; color: var(--text-muted);">--</td>
+                <td style="text-align: center; color: var(--text-muted);">--</td>
+                <td style="text-align: center; font-weight: 800; font-size: 1.05rem; color: #1E40AF;">{{ p.total_achievement }}</td>
+              </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Office-wise Detailed Matrix Table -->
+    <div class="card">
+      <div class="card-title">
+        <span>📑 Office-wise Submissions & Matrix (55 Offices)</span>
+      </div>
+
+      <!-- Filters -->
+      <div class="grid-3" style="margin-bottom: 16px;">
+        <div>
+          <label>Filter by Search:</label>
+          <input type="text" id="matrixSearch" class="form-control" placeholder="Search office name..." oninput="filterMatrix()">
+        </div>
+        <div>
+          <label>Filter by HPO Group:</label>
+          <select id="hpoFilter" class="form-control" onchange="filterMatrix()">
+            <option value="ALL">All HPOs (Indraprastha, Sansad Marg, New Delhi)</option>
+            <option value="Indraprastha HPO">Indraprastha HPO</option>
+            <option value="Sansad Marg HPO">Sansad Marg HPO</option>
+            <option value="New Delhi HO">New Delhi HO</option>
+          </select>
+        </div>
+        <div>
+          <label>Filter by Status:</label>
+          <select id="statusFilter" class="form-control" onchange="filterMatrix()">
+            <option value="ALL">All Status (Submitted & Pending)</option>
+            <option value="SUBMITTED">Submitted Only</option>
+            <option value="PENDING">Pending Only</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="overflow-x: auto; max-height: 550px;">
+        <table class="entry-table" id="matrixTable">
+          <thead style="position: sticky; top: 0; z-index: 10;">
+            <tr>
+              <th>Office Name</th>
+              <th>HPO Group</th>
+              <th style="text-align: center;">Status</th>
+              <th>Submitted At</th>
+              <th style="text-align: center;">Savings (O / C)</th>
+              <th style="text-align: center;">IPPB (O / C)</th>
+              <th style="text-align: center;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in data.office_matrix %}
+            <tr class="matrix-row" data-office="{{ row.office_name|lower }}" data-hpo="{{ row.hpo_group }}" data-status="{{ row.status }}">
+              <td>
+                <strong>{{ row.office_name }}</strong>
+                {% if row.is_modified_by_admin %}
+                <span class="badge badge-warning" style="font-size:0.7rem;">Admin Edited</span>
+                {% endif %}
+              </td>
+              <td><small>{{ row.hpo_group }}</small></td>
+              <td style="text-align: center;">
+                {% if row.status == 'SUBMITTED' %}
+                <span class="badge badge-success">Submitted</span>
+                {% else %}
+                <span class="badge badge-danger">Pending</span>
+                {% endif %}
+              </td>
+              <td style="font-size: 0.82rem; color: var(--text-muted);">
+                {% if row.submitted_at %}{{ row.submitted_at }}{% else %}--{% endif %}
+              </td>
+              <td style="text-align: center; font-weight: 600;">
+                {% if row.status == 'SUBMITTED' %}
+                  {% set s_o = namespace(val=0) %}
+                  {% set s_c = namespace(val=0) %}
+                  {% for code, v in row.counts.items() %}
+                    {% set s_o.val = s_o.val + v.opened %}
+                    {% set s_c.val = s_c.val + v.closed %}
+                  {% endfor %}
+                  <span style="color: var(--primary);">{{ s_o.val }}</span> / <span style="color: #991B1B;">{{ s_c.val }}</span>
+                {% else %}
+                  --
+                {% endif %}
+              </td>
+              <td style="text-align: center; font-weight: 600;">
+                {% if row.status == 'SUBMITTED' %}
+                  {% set i_reg = row.counts.get('IPPB_REG', {'opened':0, 'closed':0}) %}
+                  {% set i_prem = row.counts.get('IPPB_PREM', {'opened':0, 'closed':0}) %}
+                  <span style="color: #B45309;">{{ i_reg.opened + i_prem.opened }}</span> / <span style="color: #991B1B;">{{ i_reg.closed + i_prem.closed }}</span>
+                {% else %}
+                  --
+                {% endif %}
+              </td>
+              <td style="text-align: center;">
+                <button class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;" onclick="openEditModal({{ row.office_id }}, '{{ row.office_name }}')">
+                  {% if row.status == 'SUBMITTED' %}👁️ View/Edit{% else %}✏️ Enter{% endif %}
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Admin Edit Office Submission Modal -->
+  <div id="adminEditModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 750px; max-height: 85vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 8px; margin-bottom: 16px;">
+        <h3 id="modalOfficeTitle" style="color: var(--primary);">Office Submission</h3>
+        <button class="btn btn-outline" style="padding: 2px 8px;" onclick="closeAdminEditModal()">✕</button>
+      </div>
+      <div id="modalLoading" style="text-align: center; padding: 20px;">Loading submission data...</div>
+      <form id="adminModalForm" style="display: none;" onsubmit="handleAdminModalSubmit(event)">
+        <input type="hidden" id="modalOfficeId">
+        <div id="modalFormInputs"></div>
+        <div class="form-group" style="margin-top: 16px;">
+          <label>Admin Modification Note (Reason for correction):</label>
+          <input type="text" id="modalAdminNotes" class="form-control" placeholder="e.g. Corrected RD opened count as per SPM telecon">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px;">
+          <button type="button" class="btn btn-outline" onclick="closeAdminEditModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes (Admin Override)</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/admin.js"></script>
+</body>
+</html>

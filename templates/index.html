@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>India Post - Daily Savings Performance Entry</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="header-bar">
+    <div class="brand-section">
+      <div class="brand-icon">IP</div>
+      <div>
+        <div class="brand-title">Department of Posts – India Post</div>
+        <div class="brand-sub">New Delhi Central Division | Daily Performance Entry Portal</div>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="/admin" class="nav-btn">📊 Admin Dashboard</a>
+      <a href="/report" class="nav-btn">📱 WhatsApp Card</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Notice / Status Banner -->
+    <div id="updateBanner" class="alert alert-warning" style="display: none;">
+      ⚠️ <strong>Existing Submission Found:</strong> <span id="updateBannerText"></span>
+      <div style="font-size:0.85rem; margin-top:4px;">You are currently in <strong>Update/Correction Mode</strong>. Modifying values and submitting will overwrite your office's previous entry for this date.</div>
+    </div>
+
+    <div id="statusAlert" class="alert" style="display: none;"></div>
+
+    <form id="submissionForm" onsubmit="handleFormSubmit(event)">
+      <!-- Office Identification Card -->
+      <div class="card">
+        <div class="card-title">
+          <span>🏢 1. Office Identification</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">Mandatory</span>
+        </div>
+
+        <div class="grid-3">
+          <div class="form-group">
+            <label for="officeSelect">Select Office Name *</label>
+            <select id="officeSelect" class="form-control" required onchange="handleOfficeChange()">
+              <option value="">-- Choose Post Office (55 Operational) --</option>
+              {% for off in offices %}
+              <option value="{{ off.id }}" data-hpo="{{ off.hpo_group }}">{{ off.office_name }} ({{ off.hpo_group }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="officePin">Office 4-Digit PIN *</label>
+            <input type="password" id="officePin" class="form-control" placeholder="Enter 4-digit PIN" maxlength="6" required oninput="handlePinInput()">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+              <small style="color: var(--text-muted);">Prevents accidental cross-submission</small>
+              <label style="font-size: 0.78rem; font-weight: normal; margin: 0; cursor: pointer;">
+                <input type="checkbox" id="rememberPin" checked> Remember
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reportDate">Reporting Date *</label>
+            <input type="date" id="reportDate" class="form-control" value="{{ today_str }}" required onchange="handleDateChange()">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="submittedBy">Submitted By (Official Name / Designation)</label>
+          <input type="text" id="submittedBy" class="form-control" placeholder="e.g. SPM / Sub Postmaster / Postal Assistant">
+        </div>
+      </div>
+
+      <!-- Section 1: Savings / POSB -->
+      <div class="card">
+        <div class="card-title">
+          <span>💰 2. Savings Bank (POSB) Performance</span>
+          <span class="badge badge-success">Section 1</span>
+        </div>
+
+        <h4 style="font-size:0.95rem; color:#1E293B; margin-bottom:8px;">A. Active Savings Schemes (Opening & Closing)</h4>
+        <div style="overflow-x: auto;">
+          <table class="entry-table">
+            <thead>
+              <tr>
+                <th style="width: 50%;">Product / Scheme Name</th>
+                <th style="width: 25%; text-align: center;">Opened (Count)</th>
+                <th style="width: 25%; text-align: center;">Closed (Count)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in products %}
+                {% if p.section == 'SAVINGS' and p.entry_mode == 'OPENED_AND_CLOSED' %}
+                <tr>
+                  <td>
+                    <span class="prod-name">{{ p.name }}</span>
+                    <span class="prod-code">{{ p.short_name }}</span>
+                  </td>
+                  <td style="text-align: center;">
+                    <input type="number" min="0" step="1" id="prod_{{ p.code }}_opened" class="num-input count-field" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'">
+                  </td>
+                  <td style="text-align: center;">
+                    <input type="number" min="0" step="1" id="prod_{{ p.code }}_closed" class="num-input count-field" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'">
+                  </td>
+                </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <h4 style="font-size:0.95rem; color:#1E293B; margin-top:24px; margin-bottom:8px;">B. Discontinued Savings Schemes (Closing Only)</h4>
+        <div style="overflow-x: auto;">
+          <table class="entry-table">
+            <thead>
+              <tr>
+                <th style="width: 50%;">Scheme Name</th>
+                <th style="width: 25%; text-align: center;">Opened</th>
+                <th style="width: 25%; text-align: center;">Closed (Count)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in products %}
+                {% if p.section == 'SAVINGS' and p.entry_mode == 'CLOSED_ONLY' %}
+                <tr>
+                  <td>
+                    <span class="prod-name">{{ p.name }}</span>
+                    <span class="prod-code">{{ p.short_name }}</span>
+                  </td>
+                  <td style="text-align: center; color: var(--text-muted); font-size: 0.85rem; font-style: italic;">
+                    Discontinued
+                  </td>
+                  <td style="text-align: center;">
+                    <input type="number" min="0" step="1" id="prod_{{ p.code }}_closed" class="num-input count-field" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'">
+                  </td>
+                </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section 2: IPPB -->
+      <div class="card">
+        <div class="card-title">
+          <span>📱 3. IPPB (India Post Payments Bank) Performance</span>
+          <span class="badge badge-warning">Section 2</span>
+        </div>
+
+        <h4 style="font-size:0.95rem; color:#1E293B; margin-bottom:8px;">A. IPPB Accounts (Opening & Closing)</h4>
+        <div style="overflow-x: auto;">
+          <table class="entry-table">
+            <thead>
+              <tr>
+                <th style="width: 50%;">Account Type</th>
+                <th style="width: 25%; text-align: center;">Opened (Count)</th>
+                <th style="width: 25%; text-align: center;">Closed (Count)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in products %}
+                {% if p.section == 'IPPB' and p.entry_mode == 'OPENED_AND_CLOSED' %}
+                <tr>
+                  <td>
+                    <span class="prod-name">{{ p.name }}</span>
+                    <span class="prod-code">{{ p.short_name }}</span>
+                  </td>
+                  <td style="text-align: center;">
+                    <input type="number" min="0" step="1" id="prod_{{ p.code }}_opened" class="num-input count-field" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'">
+                  </td>
+                  <td style="text-align: center;">
+                    <input type="number" min="0" step="1" id="prod_{{ p.code }}_closed" class="num-input count-field" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'">
+                  </td>
+                </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <h4 style="font-size:0.95rem; color:#1E293B; margin-top:24px; margin-bottom:8px;">B. IPPB Services & Business Activities (Achievement Count Only)</h4>
+        <div style="overflow-x: auto;">
+          <table class="entry-table">
+            <thead>
+              <tr>
+                <th style="width: 70%;">Activity / Service</th>
+                <th style="width: 30%; text-align: center;">Today's Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in products %}
+                {% if p.section == 'IPPB' and p.entry_mode == 'ACHIEVEMENT_COUNT' %}
+                <tr>
+                  <td>
+                    <span class="prod-name">{{ p.name }}</span>
+                    <span class="prod-code">{{ p.short_name }}</span>
+                  </td>
+                  <td style="text-align: center;">
+                    <input type="number" min="0" step="1" id="prod_{{ p.code }}_achievement" class="num-input count-field" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'">
+                  </td>
+                </tr>
+                {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Action Footer -->
+      <div style="display: flex; gap: 16px; align-items: center; justify-content: flex-end; flex-wrap: wrap;">
+        <button type="button" class="btn btn-outline" onclick="resetFormToZeroes()">Clear All Fields to 0</button>
+        <button type="submit" id="submitBtn" class="btn btn-primary" style="padding: 12px 32px; font-size: 1.05rem;">
+          📤 Submit Daily Performance
+        </button>
+      </div>
+    </form>
+  </main>
+
+  <!-- Confirmation Modal for All-Zero Submissions -->
+  <div id="zeroModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="color: #B45309; margin-bottom: 12px;">⚠️ Zero Performance Confirmation</h3>
+      <p style="font-size: 0.95rem; color: #475569; margin-bottom: 20px;">
+        You have entered <strong>0</strong> for all Savings and IPPB products.
+        <br><br>
+        Are you sure your office had <strong>zero transactions</strong> today?
+      </p>
+      <div style="display: flex; justify-content: flex-end; gap: 12px;">
+        <button type="button" class="btn btn-outline" onclick="closeZeroModal()">Cancel & Review</button>
+        <button type="button" class="btn btn-warning" onclick="executeSubmission(true)">Yes, Submit Zero Figures</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

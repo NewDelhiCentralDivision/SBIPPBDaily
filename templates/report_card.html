@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Savings Performance Report Card - New Delhi Central Division</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white; padding: 0; }
+      .report-card-container { box-shadow: none; border: 1px solid #000; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="header-bar no-print">
+    <div class="brand-section">
+      <div class="brand-icon">WHATSAPP</div>
+      <div>
+        <div class="brand-title">Daily Savings Performance Report Card</div>
+        <div class="brand-sub">WhatsApp-Ready Graphical & Text Formats</div>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="/admin?date={{ report_date }}" class="nav-btn">📊 Admin Dashboard</a>
+      <a href="/" class="nav-btn">📝 Office Portal</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Action Toolbar -->
+    <div class="card no-print" style="padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <label style="margin: 0; font-weight: 700;">Date:</label>
+        <input type="date" id="reportCardDate" class="form-control" style="width: auto; padding: 6px 12px;" value="{{ report_date }}" onchange="location.href='/report?date=' + this.value">
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-outline" onclick="copyWhatsAppReportText()">
+          📋 Copy Formatted WhatsApp Text
+        </button>
+        <button class="btn btn-primary" onclick="downloadReportPNG()">
+          🖼️ Download as PNG Image
+        </button>
+      </div>
+    </div>
+
+    <!-- WhatsApp Report Card (DOM representation) -->
+    <div id="reportCard" class="report-card-container">
+      <div class="rc-header">
+        <div style="display:inline-block; background: #F8B133; color: #1E293B; font-weight: 800; font-size: 0.8rem; padding: 2px 10px; border-radius: 4px; margin-bottom: 6px; letter-spacing: 1px;">
+          DEPARTMENT OF POSTS • INDIA POST
+        </div>
+        <h2>NEW DELHI CENTRAL DIVISION</h2>
+        <h3>DAILY SAVINGS & IPPB PERFORMANCE REPORT</h3>
+        <p>Reporting Date: <strong>{{ report_date }}</strong></p>
+      </div>
+
+      <!-- Status KPIs -->
+      <div class="rc-kpis">
+        <div class="rc-kpi-item">
+          <div class="label">Offices Reported</div>
+          <div class="val">{{ data.metrics.submitted_count }} / {{ data.metrics.total_offices }}</div>
+        </div>
+        <div class="rc-kpi-item">
+          <div class="label">Pending Offices</div>
+          <div class="val" style="color: {% if data.metrics.pending_count > 0 %}#DC2626{% else %}#16A34A{% endif %};">
+            {{ data.metrics.pending_count }}
+          </div>
+        </div>
+        <div class="rc-kpi-item">
+          <div class="label">Completion Rate</div>
+          <div class="val" style="color: #2563EB;">{{ data.metrics.completion_pct }}%</div>
+        </div>
+      </div>
+
+      <div class="rc-body">
+        <!-- Section 1: Savings / POSB -->
+        <div class="rc-section-title">1. SAVINGS / POSB PERFORMANCE</div>
+        <table class="rc-table">
+          <thead>
+            <tr>
+              <th style="width: 46%;">Scheme / Certificate</th>
+              <th style="width: 27%;">Opened</th>
+              <th style="width: 27%;">Closed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in data.consolidated_products %}
+              {% if p.section == 'SAVINGS' %}
+              <tr>
+                <td>{{ p.short_name }} ({{ p.name.split('(')[0].strip() }})</td>
+                <td>{% if p.entry_mode == 'CLOSED_ONLY' %}<span style="color:#94A3B8;">--</span>{% else %}<strong>{{ p.total_opened }}</strong>{% endif %}</td>
+                <td><strong>{{ p.total_closed }}</strong></td>
+              </tr>
+              {% endif %}
+            {% endfor %}
+            <tr class="total-row">
+              <td>TOTAL SAVINGS / POSB</td>
+              <td style="color: var(--primary); font-size: 1rem;">{{ data.metrics.total_savings_opened }}</td>
+              <td style="color: #991B1B; font-size: 1rem;">{{ data.metrics.total_savings_closed }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Section 2: IPPB Performance -->
+        <div class="rc-section-title" style="border-left-color: #F59E0B; margin-top: 18px;">2. IPPB PERFORMANCE</div>
+        
+        <!-- IPPB Accounts -->
+        <table class="rc-table" style="margin-bottom: 12px;">
+          <thead>
+            <tr>
+              <th style="width: 46%;">IPPB Account Type</th>
+              <th style="width: 27%;">Opened</th>
+              <th style="width: 27%;">Closed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in data.consolidated_products %}
+              {% if p.section == 'IPPB' and p.entry_mode == 'OPENED_AND_CLOSED' %}
+              <tr>
+                <td>{{ p.name }}</td>
+                <td><strong>{{ p.total_opened }}</strong></td>
+                <td><strong>{{ p.total_closed }}</strong></td>
+              </tr>
+              {% endif %}
+            {% endfor %}
+            <tr class="total-row" style="background: #FEF3C7; border-top-color: #FCD34D;">
+              <td>TOTAL IPPB ACCOUNTS</td>
+              <td style="color: #B45309; font-size: 1rem;">{{ data.metrics.total_ippb_opened }}</td>
+              <td style="color: #991B1B; font-size: 1rem;">{{ data.metrics.total_ippb_closed }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- IPPB Services Achievements -->
+        <div style="font-size: 0.8rem; font-weight: 700; color: #475569; margin: 8px 0 4px 4px; text-transform: uppercase;">
+          IPPB Services & Business Achievements (Count)
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; font-size: 0.84rem;">
+          {% for p in data.consolidated_products %}
+            {% if p.section == 'IPPB' and p.entry_mode == 'ACHIEVEMENT_COUNT' %}
+            <div style="background: #F8FAFC; border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+              <span>{{ p.short_name }}</span>
+              <strong style="color: #1E40AF; font-size: 0.95rem;">{{ p.total_achievement }}</strong>
+            </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="rc-footer">
+        Generated by New Delhi Central Division Savings Monitoring System • India Post
+      </div>
+    </div>
+
+    <!-- Hidden Canvas for High-Resolution PNG Generation -->
+    <canvas id="hiddenReportCanvas" style="display: none;"></canvas>
+
+    <!-- Raw WhatsApp Text Preview & Copy Box -->
+    <div class="card no-print" style="max-width: 680px; margin: 0 auto;">
+      <div class="card-title">
+        <span>💬 WhatsApp Monospace Text Format</span>
+        <button class="btn btn-outline" style="font-size: 0.82rem; padding: 4px 10px;" onclick="copyWhatsAppReportText()">Copy Text</button>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
+        Formatted with bolding, bullet points, and WhatsApp markdown for clean rendering in mobile chat groups:
+      </p>
+      <textarea id="whatsappTextPreview" class="form-control" rows="14" readonly style="font-family: monospace; font-size: 0.85rem; background: #F8FAFC;"></textarea>
+    </div>
+  </main>
+
+  <script src="/static/report_canvas.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const dt = document.getElementById('reportCardDate').value;
+      try {
+        const res = await fetch(`/api/whatsapp-text?date=${dt}`);
+        const data = await res.json();
+        document.getElementById('whatsappTextPreview').value = data.text;
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    async function copyWhatsAppReportText() {
+      const text = document.getElementById('whatsappTextPreview').value;
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('📋 WhatsApp report text copied to clipboard! You can paste it directly into WhatsApp.');
+      } catch (err) {
+        window.prompt('Copy WhatsApp text below:', text);
+      }
+    }
+  </script>
+</body>
+</html>
