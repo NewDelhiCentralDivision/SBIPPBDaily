@@ -1,38 +1,19 @@
 // Cloudflare Worker: India Post New Delhi Central Division Savings Monitor
-// Production Build (Compact & Resilient)
+// No PIN Verification - Direct Office Dropdown Submission
 
-const OFFICES = [{"id":1,"name":"AGCR SO","hpo":"Indraprastha HPO","pin":"1101"},{"id":2,"name":"Ajmeri Gate Extn SO","hpo":"Indraprastha HPO","pin":"1102"},{"id":3,"name":"Anand Parbat Indl Area SO","hpo":"New Delhi HO","pin":"1103"},{"id":4,"name":"Anand Parbat SO","hpo":"New Delhi HO","pin":"1104"},{"id":5,"name":"Baroda House SO","hpo":"Indraprastha HPO","pin":"1105"},{"id":6,"name":"Bengali Market SO","hpo":"Sansad Marg HPO","pin":"1106"},{"id":7,"name":"CAT EXTENSION COUNTER","hpo":"Indraprastha HPO","pin":"1108"},{"id":8,"name":"Civic Centre PO","hpo":"Indraprastha HPO","pin":"1109"},{"id":9,"name":"Connaught Place SO","hpo":"Sansad Marg HPO","pin":"1110"},{"id":10,"name":"Dada Ghosh Bhawan SO","hpo":"New Delhi HO","pin":"1111"},{"id":11,"name":"Darya Ganj SO","hpo":"Indraprastha HPO","pin":"1112"},{"id":12,"name":"Delhi High Court Extension Counter SO","hpo":"Indraprastha HPO","pin":"1113"},{"id":13,"name":"Delhi High Court SO","hpo":"Indraprastha HPO","pin":"1114"},{"id":14,"name":"Desh Bandhu Gupta Road SO","hpo":"New Delhi HO","pin":"1115"},{"id":15,"name":"Election Commission SO","hpo":"Sansad Marg HPO","pin":"1116"},{"id":16,"name":"Gandhi Smarak Nidhi SO","hpo":"Indraprastha HPO","pin":"1117"},{"id":17,"name":"Guru Gobind Singh Marg SO","hpo":"New Delhi HO","pin":"1118"},{"id":18,"name":"IARI SO","hpo":"New Delhi HO","pin":"1119"},{"id":19,"name":"Inderpuri SO","hpo":"New Delhi HO","pin":"1122"},{"id":20,"name":"Indraprastha HO","hpo":"Indraprastha HPO","pin":"1124"},{"id":21,"name":"IPEstate SO","hpo":"Indraprastha HPO","pin":"1125"},{"id":22,"name":"Jama Masjid SO","hpo":"Indraprastha HPO","pin":"1126"},{"id":23,"name":"Karol Bagh SO","hpo":"New Delhi HO","pin":"1127"},{"id":24,"name":"Krishi Bhawan SO","hpo":"Sansad Marg HPO","pin":"1128"},{"id":25,"name":"Lady Harding Medical College SO","hpo":"Sansad Marg HPO","pin":"1129"},{"id":26,"name":"Minto Road SO","hpo":"Indraprastha HPO","pin":"1130"},{"id":27,"name":"Multani Dhanda SO","hpo":"New Delhi HO","pin":"1131"},{"id":28,"name":"National Physical Laboratory SO","hpo":"New Delhi HO","pin":"1132"},{"id":29,"name":"NGT EXTENSION COUNTER","hpo":"Indraprastha HPO","pin":"1134"},{"id":30,"name":"Nirman Bhawan SO","hpo":"Sansad Marg HPO","pin":"1135"},{"id":31,"name":"North Avenue SO","hpo":"Sansad Marg HPO","pin":"1136"},{"id":32,"name":"Pahar Ganj SO","hpo":"New Delhi HO","pin":"1137"},{"id":33,"name":"Pandara Road SO","hpo":"Indraprastha HPO","pin":"1138"},{"id":34,"name":"Parliament House SO","hpo":"Sansad Marg HPO","pin":"1139"},{"id":35,"name":"Patel Nagar East SO","hpo":"New Delhi HO","pin":"1140"},{"id":36,"name":"Patel Nagar SO Central Delhi","hpo":"New Delhi HO","pin":"1141"},{"id":37,"name":"Patel Nagar South SO","hpo":"New Delhi HO","pin":"1142"},{"id":38,"name":"Patel Nagar West SO","hpo":"New Delhi HO","pin":"1143"},{"id":39,"name":"Patiala House SO","hpo":"Indraprastha HPO","pin":"1144"},{"id":40,"name":"Pragati Maidan SO","hpo":"Indraprastha HPO","pin":"1145"},{"id":41,"name":"Rail Bhawan SO","hpo":"Sansad Marg HPO","pin":"1146"},{"id":42,"name":"Rajender Nagar SO","hpo":"New Delhi HO","pin":"1147"},{"id":43,"name":"Rashtrapati Bhawan SO","hpo":"Sansad Marg HPO","pin":"1149"},{"id":44,"name":"Rouse Avenue Extension Counter SO","hpo":"Indraprastha HPO","pin":"1150"},{"id":45,"name":"Sansad Marg HO","hpo":"Sansad Marg HPO","pin":"1151"},{"id":46,"name":"Sansadiya Soudh SO","hpo":"Sansad Marg HPO","pin":"1152"},{"id":47,"name":"Sat Nagar SO","hpo":"New Delhi HO","pin":"1153"},{"id":48,"name":"Secretariat North SO","hpo":"Sansad Marg HPO","pin":"1154"},{"id":49,"name":"Shastri Bhawan SO","hpo":"Sansad Marg HPO","pin":"1155"},{"id":50,"name":"South Avenue SO","hpo":"Sansad Marg HPO","pin":"1156"},{"id":51,"name":"SRT NAGAR EXTENSION COUNTER","hpo":"New Delhi HO","pin":"1157"},{"id":52,"name":"Supreme Court SO","hpo":"Indraprastha HPO","pin":"1158"},{"id":53,"name":"Swami Ram Tirth Nagar SO","hpo":"New Delhi HO","pin":"1159"},{"id":54,"name":"Udyog Bhawan SO","hpo":"Sansad Marg HPO","pin":"1160"},{"id":55,"name":"Union Public Service Commission SO","hpo":"Sansad Marg HPO","pin":"1162"}];
+const OFFICES = [{"id":1,"name":"AGCR SO","hpo":"Indraprastha HPO"},{"id":2,"name":"Ajmeri Gate Extn SO","hpo":"Indraprastha HPO"},{"id":3,"name":"Anand Parbat Indl Area SO","hpo":"New Delhi HO"},{"id":4,"name":"Anand Parbat SO","hpo":"New Delhi HO"},{"id":5,"name":"Baroda House SO","hpo":"Indraprastha HPO"},{"id":6,"name":"Bengali Market SO","hpo":"Sansad Marg HPO"},{"id":7,"name":"CAT EXTENSION COUNTER","hpo":"Indraprastha HPO"},{"id":8,"name":"Civic Centre PO","hpo":"Indraprastha HPO"},{"id":9,"name":"Connaught Place SO","hpo":"Sansad Marg HPO"},{"id":10,"name":"Dada Ghosh Bhawan SO","hpo":"New Delhi HO"},{"id":11,"name":"Darya Ganj SO","hpo":"Indraprastha HPO"},{"id":12,"name":"Delhi High Court Extension Counter SO","hpo":"Indraprastha HPO"},{"id":13,"name":"Delhi High Court SO","hpo":"Indraprastha HPO"},{"id":14,"name":"Desh Bandhu Gupta Road SO","hpo":"New Delhi HO"},{"id":15,"name":"Election Commission SO","hpo":"Sansad Marg HPO"},{"id":16,"name":"Gandhi Smarak Nidhi SO","hpo":"Indraprastha HPO"},{"id":17,"name":"Guru Gobind Singh Marg SO","hpo":"New Delhi HO"},{"id":18,"name":"IARI SO","hpo":"New Delhi HO"},{"id":19,"name":"Inderpuri SO","hpo":"New Delhi HO"},{"id":20,"name":"Indraprastha HO","hpo":"Indraprastha HPO"},{"id":21,"name":"IPEstate SO","hpo":"Indraprastha HPO"},{"id":22,"name":"Jama Masjid SO","hpo":"Indraprastha HPO"},{"id":23,"name":"Karol Bagh SO","hpo":"New Delhi HO"},{"id":24,"name":"Krishi Bhawan SO","hpo":"Sansad Marg HPO"},{"id":25,"name":"Lady Harding Medical College SO","hpo":"Sansad Marg HPO"},{"id":26,"name":"Minto Road SO","hpo":"Indraprastha HPO"},{"id":27,"name":"Multani Dhanda SO","hpo":"New Delhi HO"},{"id":28,"name":"National Physical Laboratory SO","hpo":"New Delhi HO"},{"id":29,"name":"NGT EXTENSION COUNTER","hpo":"Indraprastha HPO"},{"id":30,"name":"Nirman Bhawan SO","hpo":"Sansad Marg HPO"},{"id":31,"name":"North Avenue SO","hpo":"Sansad Marg HPO"},{"id":32,"name":"Pahar Ganj SO","hpo":"New Delhi HO"},{"id":33,"name":"Pandara Road SO","hpo":"Indraprastha HPO"},{"id":34,"name":"Parliament House SO","hpo":"Sansad Marg HPO"},{"id":35,"name":"Patel Nagar East SO","hpo":"New Delhi HO"},{"id":36,"name":"Patel Nagar SO Central Delhi","hpo":"New Delhi HO"},{"id":37,"name":"Patel Nagar South SO","hpo":"New Delhi HO"},{"id":38,"name":"Patel Nagar West SO","hpo":"New Delhi HO"},{"id":39,"name":"Patiala House SO","hpo":"Indraprastha HPO"},{"id":40,"name":"Pragati Maidan SO","hpo":"Indraprastha HPO"},{"id":41,"name":"Rail Bhawan SO","hpo":"Sansad Marg HPO"},{"id":42,"name":"Rajender Nagar SO","hpo":"New Delhi HO"},{"id":43,"name":"Rashtrapati Bhawan SO","hpo":"Sansad Marg HPO"},{"id":44,"name":"Rouse Avenue Extension Counter SO","hpo":"Indraprastha HPO"},{"id":45,"name":"Sansad Marg HO","hpo":"Sansad Marg HPO"},{"id":46,"name":"Sansadiya Soudh SO","hpo":"Sansad Marg HPO"},{"id":47,"name":"Sat Nagar SO","hpo":"New Delhi HO"},{"id":48,"name":"Secretariat North SO","hpo":"Sansad Marg HPO"},{"id":49,"name":"Shastri Bhawan SO","hpo":"Sansad Marg HPO"},{"id":50,"name":"South Avenue SO","hpo":"Sansad Marg HPO"},{"id":51,"name":"SRT NAGAR EXTENSION COUNTER","hpo":"New Delhi HO"},{"id":52,"name":"Supreme Court SO","hpo":"Indraprastha HPO"},{"id":53,"name":"Swami Ram Tirth Nagar SO","hpo":"New Delhi HO"},{"id":54,"name":"Udyog Bhawan SO","hpo":"Sansad Marg HPO"},{"id":55,"name":"Union Public Service Commission SO","hpo":"Sansad Marg HPO"}];
 
 const PRODUCTS = [{"id":1,"code":"SB","name":"Savings Bank Account (SB)","short":"SB","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":2,"code":"RD","name":"Recurring Deposit (RD)","short":"RD","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":3,"code":"TD","name":"Time Deposit (TD)","short":"TD","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":4,"code":"MIS","name":"Monthly Income Scheme (MIS)","short":"MIS","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":5,"code":"PPF","name":"Public Provident Fund (PPF)","short":"PPF","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":6,"code":"NSC","name":"National Savings Certificate (NSC)","short":"NSC","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":7,"code":"KVP","name":"Kisan Vikas Patra (KVP)","short":"KVP","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":8,"code":"SCSS","name":"Senior Citizens Savings Scheme (SCSS)","short":"SCSS","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":9,"code":"SSA","name":"Sukanya Samriddhi Account (SSA)","short":"SSA","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":10,"code":"NSC_VIII","name":"NSC VIII Issue (Discontinued)","short":"NSC VIII","sec":"SAVINGS","mode":"CLOSED_ONLY"},{"id":11,"code":"IVP","name":"Indira Vikas Patra (IVP)","short":"IVP","sec":"SAVINGS","mode":"CLOSED_ONLY"},{"id":12,"code":"IPPB_REG","name":"IPPB Regular Savings Account","short":"Regular A/C","sec":"IPPB","mode":"OPENED_AND_CLOSED"},{"id":13,"code":"IPPB_PREM","name":"IPPB Premium Savings Account","short":"Premium A/C","sec":"IPPB","mode":"OPENED_AND_CLOSED"},{"id":14,"code":"IPPB_UPGRADE","name":"Account Upgradation","short":"A/C Upgrade","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"},{"id":15,"code":"IPPB_AADHAAR","name":"Aadhaar Seeding","short":"Aadhaar Seed","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"},{"id":16,"code":"IPPB_CELC","name":"CELC (Child Enrolment Lite Client)","short":"CELC","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"},{"id":17,"code":"IPPB_LINKING","name":"POSB–IPPB Linking","short":"POSB-IPPB Link","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"},{"id":18,"code":"IPPB_LI","name":"Life Insurance (LI)","short":"Life Ins.","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"},{"id":19,"code":"IPPB_GI","name":"General Insurance (GI)","short":"Gen. Ins.","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"},{"id":20,"code":"IPPB_PAI","name":"Personal Accident Insurance (PAI)","short":"PAI","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"},{"id":21,"code":"IPPB_HI","name":"Health Insurance (HI)","short":"Health Ins.","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"}];
 
 async function ensureTables(env) {
   if (!env.DB) return;
   try {
-    await env.DB.exec(`
-      CREATE TABLE IF NOT EXISTS daily_submissions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        office_id INT NOT NULL,
-        office_name TEXT NOT NULL,
-        hpo_group TEXT NOT NULL,
-        report_date TEXT NOT NULL,
-        submitted_by TEXT,
-        submitted_at TEXT,
-        updated_at TEXT,
-        is_modified_by_admin INT DEFAULT 0,
-        admin_notes TEXT,
-        UNIQUE(office_id, report_date)
-      );
-      CREATE TABLE IF NOT EXISTS submission_items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        submission_id INT NOT NULL,
-        product_code TEXT NOT NULL,
-        opened_count INT DEFAULT 0,
-        closed_count INT DEFAULT 0,
-        achievement_count INT DEFAULT 0,
-        FOREIGN KEY(submission_id) REFERENCES daily_submissions(id) ON DELETE CASCADE,
-        UNIQUE(submission_id, product_code)
-      );
-    `);
+    await env.DB.prepare(
+      "CREATE TABLE IF NOT EXISTS daily_submissions (id INTEGER PRIMARY KEY AUTOINCREMENT, office_id INT NOT NULL, office_name TEXT NOT NULL, hpo_group TEXT NOT NULL, report_date TEXT NOT NULL, submitted_by TEXT, submitted_at TEXT, updated_at TEXT, is_modified_by_admin INT DEFAULT 0, admin_notes TEXT, UNIQUE(office_id, report_date))"
+    ).run();
+    await env.DB.prepare(
+      "CREATE TABLE IF NOT EXISTS submission_items (id INTEGER PRIMARY KEY AUTOINCREMENT, submission_id INT NOT NULL, product_code TEXT NOT NULL, opened_count INT DEFAULT 0, closed_count INT DEFAULT 0, achievement_count INT DEFAULT 0, UNIQUE(submission_id, product_code))"
+    ).run();
   } catch (e) {
     console.error("Table init error:", e);
   }
@@ -94,22 +75,16 @@ export default {
       }
     }
 
-    // 4. API: Submit / Update Performance Data
+    // 4. API: Submit / Update Performance Data (No PIN Required)
     if (pathname === "/api/submit" && request.method === "POST") {
       try {
         const body = await request.json();
-        const { office_id, pin, report_date, submitted_by, items, is_admin, admin_notes } = body;
+        const { office_id, report_date, submitted_by, items, is_admin, admin_notes } = body;
 
         if (!office_id || !report_date) return json({ detail: "Office and Date required" }, 400);
 
         const targetOffice = OFFICES.find((o) => o.id === parseInt(office_id, 10));
         if (!targetOffice) return json({ detail: "Invalid office selected" }, 400);
-
-        if (!is_admin) {
-          if (String(targetOffice.pin).trim() !== String(pin).trim()) {
-            return json({ detail: "Invalid 4-digit Office Verification PIN for " + targetOffice.name }, 403);
-          }
-        }
 
         const existing = await env.DB.prepare(
           "SELECT id FROM daily_submissions WHERE office_id = ? AND report_date = ?"
@@ -316,7 +291,7 @@ export default {
       }
 
       lines.push("", "━━━━━━━━━━━━━━━━━━━━━━", "Generated via Divisional Reporting Portal");
-      return json({ text: lines.join("\n") });
+      return json({ text: lines.join("\\n") });
     }
 
     // 7. API: CSV Export
@@ -349,7 +324,7 @@ export default {
         rows.push(line.map((val) => `"${val}"`).join(","));
       }
 
-      return new Response(rows.join("\n"), {
+      return new Response(rows.join("\\n"), {
         headers: {
           "Content-Type": "text/csv; charset=utf-8",
           "Content-Disposition": `attachment; filename=Savings_Performance_${date}.csv`
@@ -380,8 +355,9 @@ body { background:var(--bg); color:var(--text); line-height:1.5; padding-bottom:
 .stat-card { background:#FFF; padding:16px; border-radius:8px; border:1px solid var(--border); border-top:4px solid var(--primary); }
 .stat-val { font-size:1.8rem; font-weight:800; color:var(--text); margin-top:2px; }
 .stat-label { font-size:0.75rem; font-weight:700; text-transform:uppercase; color:var(--muted); }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-@media (max-width:640px) { .grid-3 { grid-template-columns:1fr; } }
+@media (max-width:640px) { .grid-2, .grid-3 { grid-template-columns:1fr; } }
 .form-group { margin-bottom:14px; }
 label { display:block; font-size:0.85rem; font-weight:600; margin-bottom:5px; }
 .form-control { width:100%; padding:9px 12px; border-radius:6px; border:1.5px solid var(--border); font-size:0.92rem; background:#FFF; font-family:inherit; }
@@ -450,21 +426,13 @@ function renderIndexPage() {
             </select>
           </div>
           <div class="form-group">
-            <label for="officePin">Office 4-Digit PIN *</label>
-            <input type="password" id="officePin" class="form-control" placeholder="Enter 4-digit PIN" maxlength="6" required oninput="handlePinInput()">
-            <div style="display:flex; justify-content:space-between; margin-top:4px;">
-              <small style="color:var(--muted); font-size:0.75rem;">Prevents cross-submission</small>
-              <label style="font-size:0.75rem; margin:0;"><input type="checkbox" id="rememberPin" checked> Remember</label>
-            </div>
-          </div>
-          <div class="form-group">
             <label for="reportDate">Reporting Date *</label>
             <input type="date" id="reportDate" class="form-control" required onchange="handleDateChange()">
           </div>
-        </div>
-        <div class="form-group" style="margin-bottom:0;">
-          <label for="submittedBy">Submitted By (Official Name / Designation)</label>
-          <input type="text" id="submittedBy" class="form-control" placeholder="e.g. SPM / Postal Assistant">
+          <div class="form-group">
+            <label for="submittedBy">Submitted By (Official Name / Designation)</label>
+            <input type="text" id="submittedBy" class="form-control" placeholder="e.g. SPM / Postal Assistant">
+          </div>
         </div>
       </div>
 
@@ -553,33 +521,20 @@ function renderIndexPage() {
       });
 
       const savedOfficeId = localStorage.getItem('ip_office_id');
-      const savedPin = localStorage.getItem('ip_office_pin');
       if (savedOfficeId) {
         sel.value = savedOfficeId;
-        if (savedPin) document.getElementById('officePin').value = savedPin;
         checkExistingSubmission();
       }
     });
 
     function handleOfficeChange() {
       const officeId = document.getElementById('officeSelect').value;
-      const savedOfficeId = localStorage.getItem('ip_office_id');
-      const savedPin = localStorage.getItem('ip_office_pin');
-      if (savedOfficeId === officeId && savedPin) {
-        document.getElementById('officePin').value = savedPin;
+      if (officeId) {
+        localStorage.setItem('ip_office_id', officeId);
       }
       checkExistingSubmission();
     }
     function handleDateChange() { checkExistingSubmission(); }
-    function handlePinInput() {
-      const rem = document.getElementById('rememberPin').checked;
-      const off = document.getElementById('officeSelect').value;
-      const pin = document.getElementById('officePin').value;
-      if (rem && off && pin.length >= 4) {
-        localStorage.setItem('ip_office_id', off);
-        localStorage.setItem('ip_office_pin', pin);
-      }
-    }
 
     async function checkExistingSubmission() {
       const officeId = document.getElementById('officeSelect').value;
@@ -645,7 +600,6 @@ function renderIndexPage() {
       closeZeroModal();
       const officeSelect = document.getElementById('officeSelect');
       const officeId = officeSelect.value;
-      const pin = document.getElementById('officePin').value.trim();
       const reportDate = document.getElementById('reportDate').value;
       const submittedBy = document.getElementById('submittedBy').value.trim() || 'Staff';
 
@@ -666,7 +620,7 @@ function renderIndexPage() {
         items[code].achievement = parseInt(inp.value || 0, 10);
       });
 
-      const payload = { office_id: parseInt(officeId, 10), pin, report_date: reportDate, submitted_by: submittedBy, items };
+      const payload = { office_id: parseInt(officeId, 10), report_date: reportDate, submitted_by: submittedBy, items };
       const submitBtn = document.getElementById('submitBtn');
       submitBtn.disabled = true; submitBtn.innerText = 'Submitting...';
 
@@ -680,11 +634,8 @@ function renderIndexPage() {
         if (!res.ok) {
           showAlert(data.detail || 'Submission failed.', 'danger');
         } else {
-          if (document.getElementById('rememberPin').checked) {
-            localStorage.setItem('ip_office_id', officeId);
-            localStorage.setItem('ip_office_pin', pin);
-          }
-          showAlert('✅ Success! Daily Performance ' + (data.action === 'UPDATE' ? 'Updated' : 'Submitted') + ' successfully.', 'success');
+          localStorage.setItem('ip_office_id', officeId);
+          showAlert('✅ Success! Daily Performance ' + (data.action === 'UPDATE' ? 'Updated' : 'Submitted') + ' successfully for ' + officeSelect.options[officeSelect.selectedIndex].text + '.', 'success');
           checkExistingSubmission();
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
