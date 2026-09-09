@@ -240,7 +240,7 @@ export default {
         "*DAILY SAVINGS & IPPB PERFORMANCE REPORT*",
         `📅 *Date: ${displayDate}*`,
         "━━━━━━━━━━━━━━━━━━━━━━",
-        `📊 *Reporting Status:* ${m.submitted_count} /${m.total_offices} Offices`,
+        `📊 *Reporting Status:* ${m.submitted_count} / ${m.total_offices} Offices`,
         `⏳ *Pending Offices:* ${m.pending_count}`,
         `📈 *Completion Rate:* ${m.completion_pct}%`,
         "━━━━━━━━━━━━━━━━━━━━━━",
@@ -255,7 +255,7 @@ export default {
         if (p.section === "SAVINGS") {
           const sname = (p.short_name + "      ").substring(0, 6);
           if (p.entry_mode === "CLOSED_ONLY") {
-            lines.push(`│ ${sname} │   --   │${String(p.total_closed).padStart(5, " ")} │`);
+            lines.push(`│ ${sname} │   --   │  ${String(p.total_closed).padStart(5, " ")} │`);
           } else {
             lines.push(`│ ${sname} │  ${String(p.total_opened).padStart(5, " ")} │  ${String(p.total_closed).padStart(5, " ")} │`);
           }
@@ -1260,7 +1260,6 @@ function getReportHtml() {
       ctx.fillStyle = "#F8FAFC"; ctx.fillRect(0, 0, width, height);
 
       const m = 30, cw = width - 60, ch = height - 60;
-      ctx.fillStyle = "#FFFFFF"; ctx.strokeStyle = "#C8102 - 60;
       ctx.fillStyle = "#FFFFFF"; ctx.strokeStyle = "#C8102E"; ctx.lineWidth = 6;
       ctx.beginPath(); ctx.roundRect(m, m, cw, ch, 24); ctx.fill(); ctx.stroke();
 
@@ -1309,4 +1308,82 @@ function getReportHtml() {
       curY += 40;
       const tx = m + 30, tw = cw - 60;
       ctx.fillStyle = "#F1F5F9"; ctx.fillRect(tx, curY, tw, 36);
-      ctx.fillStyle = "#4
+      ctx.fillStyle = "#475569"; ctx.font = "bold 16px sans-serif";
+      ctx.fillText("SCHEME / CERTIFICATE", tx + 20, curY + 24);
+      ctx.textAlign = "center";
+      ctx.fillText("OPENED", tx + tw * 0.65, curY + 24);
+      ctx.fillText("CLOSED", tx + tw * 0.88, curY + 24);
+
+      curY += 36;
+      reportData.consolidated_products.filter(p => p.section === 'SAVINGS').forEach((p, i) => {
+        ctx.fillStyle = i % 2 === 0 ? "#FFFFFF" : "#F8FAFC"; ctx.fillRect(tx, curY, tw, 32);
+        ctx.textAlign = "left"; ctx.fillStyle = "#1E293B"; ctx.font = "600 16px sans-serif";
+        ctx.fillText(\`\${p.short_name} - \${p.name.split('(')[0].trim()}\`, tx + 20, curY + 22);
+        ctx.textAlign = "center"; ctx.fillStyle = "#0F172A"; ctx.font = "bold 16px sans-serif";
+        ctx.fillText(p.entry_mode === 'CLOSED_ONLY' ? '--' : p.total_opened, tx + tw * 0.65, curY + 22);
+        ctx.fillText(p.total_closed, tx + tw * 0.88, curY + 22);
+        curY += 32;
+      });
+
+      // Total POSB
+      ctx.fillStyle = "#FFF1F2"; ctx.fillRect(tx, curY, tw, 38);
+      ctx.textAlign = "left"; ctx.fillStyle = "#9E0C24"; ctx.font = "bold 18px sans-serif";
+      ctx.fillText("TOTAL SAVINGS", tx + 20, curY + 25);
+      ctx.textAlign = "center"; ctx.fillStyle = "#C8102E"; ctx.font = "bold 20px sans-serif";
+      ctx.fillText(met.total_savings_opened, tx + tw * 0.65, curY + 26);
+      ctx.fillStyle = "#991B1B";
+      ctx.fillText(met.total_savings_closed, tx + tw * 0.88, curY + 26);
+
+      curY += 60;
+      ctx.fillStyle = "#F59E0B"; ctx.fillRect(m + 30, curY, 8, 28);
+      ctx.fillStyle = "#0F172A"; ctx.font = "bold 20px sans-serif"; ctx.textAlign = "left";
+      ctx.fillText("2. IPPB PERFORMANCE", m + 48, curY + 22);
+
+      curY += 40;
+      ctx.fillStyle = "#F1F5F9"; ctx.fillRect(tx, curY, tw, 34);
+      ctx.fillStyle = "#475569"; ctx.font = "bold 16px sans-serif";
+      ctx.fillText("IPPB ACCOUNT TYPE", tx + 20, curY + 23);
+      ctx.textAlign = "center";
+      ctx.fillText("OPENED", tx + tw * 0.65, curY + 23);
+      ctx.fillText("CLOSED", tx + tw * 0.88, curY + 23);
+
+      curY += 34;
+      reportData.consolidated_products.filter(p => p.section === 'IPPB' && p.entry_mode === 'OPENED_AND_CLOSED').forEach((p, i) => {
+        ctx.fillStyle = i % 2 === 0 ? "#FFFFFF" : "#F8FAFC"; ctx.fillRect(tx, curY, tw, 32);
+        ctx.textAlign = "left"; ctx.fillStyle = "#1E293B"; ctx.font = "600 16px sans-serif";
+        ctx.fillText(p.name, tx + 20, curY + 22);
+        ctx.textAlign = "center"; ctx.fillStyle = "#0F172A"; ctx.font = "bold 16px sans-serif";
+        ctx.fillText(p.total_opened, tx + tw * 0.65, curY + 22);
+        ctx.fillText(p.total_closed, tx + tw * 0.88, curY + 22);
+        curY += 32;
+      });
+
+      curY += 50;
+      ctx.textAlign = "left"; ctx.fillStyle = "#475569"; ctx.font = "bold 15px sans-serif";
+      ctx.fillText("IPPB SERVICES & BUSINESS ACHIEVEMENTS", tx, curY);
+
+      curY += 15;
+      const services = reportData.consolidated_products.filter(p => p.section === 'IPPB' && p.entry_mode === 'ACHIEVEMENT_COUNT');
+      const tileW = (tw - 16) / 2;
+      services.forEach((s, i) => {
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const stx = tx + col * (tileW + 16);
+        const sty = curY + row * 50;
+        ctx.fillStyle = "#F8FAFC"; ctx.strokeStyle = "#CBD5E1"; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.roundRect(stx, sty, tileW, 40, 8); ctx.fill(); ctx.stroke();
+        ctx.textAlign = "left"; ctx.font = "600 15px sans-serif"; ctx.fillStyle = "#1E293B";
+        ctx.fillText(s.name, stx + 14, sty + 25);
+        ctx.textAlign = "right"; ctx.font = "bold 18px sans-serif"; ctx.fillStyle = "#1E40AF";
+        ctx.fillText(s.total_achievement, stx + tileW - 16, sty + 26);
+      });
+
+      const a = document.createElement('a');
+      a.download = \`Savings_Performance_\${reportData.report_date}.png\`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }
+  </script>
+</body>
+</html>`;
+}
