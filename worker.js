@@ -1,87 +1,9 @@
 // Cloudflare Worker: India Post New Delhi Central Division Savings Monitor
-// Zero-configuration, self-initializing, resilient architecture
+// Production Build (Compact & Resilient)
 
-const DEFAULT_OFFICES = [
-  { "id": 1, "office_name": "AGCR SO", "hpo_group": "Indraprastha HPO", "pin_code": "1101" },
-  { "id": 2, "office_name": "Ajmeri Gate Extn SO", "hpo_group": "Indraprastha HPO", "pin_code": "1102" },
-  { "id": 3, "office_name": "Anand Parbat Indl Area SO", "hpo_group": "New Delhi HO", "pin_code": "1103" },
-  { "id": 4, "office_name": "Anand Parbat SO", "hpo_group": "New Delhi HO", "pin_code": "1104" },
-  { "id": 5, "office_name": "Baroda House SO", "hpo_group": "Indraprastha HPO", "pin_code": "1105" },
-  { "id": 6, "office_name": "Bengali Market SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1106" },
-  { "id": 7, "office_name": "CAT EXTENSION COUNTER", "hpo_group": "Indraprastha HPO", "pin_code": "1108" },
-  { "id": 8, "office_name": "Civic Centre PO", "hpo_group": "Indraprastha HPO", "pin_code": "1109" },
-  { "id": 9, "office_name": "Connaught Place SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1110" },
-  { "id": 10, "office_name": "Dada Ghosh Bhawan SO", "hpo_group": "New Delhi HO", "pin_code": "1111" },
-  { "id": 11, "office_name": "Darya Ganj SO", "hpo_group": "Indraprastha HPO", "pin_code": "1112" },
-  { "id": 12, "office_name": "Delhi High Court Extension Counter SO", "hpo_group": "Indraprastha HPO", "pin_code": "1113" },
-  { "id": 13, "office_name": "Delhi High Court SO", "hpo_group": "Indraprastha HPO", "pin_code": "1114" },
-  { "id": 14, "office_name": "Desh Bandhu Gupta Road SO", "hpo_group": "New Delhi HO", "pin_code": "1115" },
-  { "id": 15, "office_name": "Election Commission SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1116" },
-  { "id": 16, "office_name": "Gandhi Smarak Nidhi SO", "hpo_group": "Indraprastha HPO", "pin_code": "1117" },
-  { "id": 17, "office_name": "Guru Gobind Singh Marg SO", "hpo_group": "New Delhi HO", "pin_code": "1118" },
-  { "id": 18, "office_name": "IARI SO", "hpo_group": "New Delhi HO", "pin_code": "1119" },
-  { "id": 19, "office_name": "Inderpuri SO", "hpo_group": "New Delhi HO", "pin_code": "1122" },
-  { "id": 20, "office_name": "Indraprastha HO", "hpo_group": "Indraprastha HPO", "pin_code": "1124" },
-  { "id": 21, "office_name": "IPEstate SO", "hpo_group": "Indraprastha HPO", "pin_code": "1125" },
-  { "id": 22, "office_name": "Jama Masjid SO", "hpo_group": "Indraprastha HPO", "pin_code": "1126" },
-  { "id": 23, "office_name": "Karol Bagh SO", "hpo_group": "New Delhi HO", "pin_code": "1127" },
-  { "id": 24, "office_name": "Krishi Bhawan SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1128" },
-  { "id": 25, "office_name": "Lady Harding Medical College SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1129" },
-  { "id": 26, "office_name": "Minto Road SO", "hpo_group": "Indraprastha HPO", "pin_code": "1130" },
-  { "id": 27, "office_name": "Multani Dhanda SO", "hpo_group": "New Delhi HO", "pin_code": "1131" },
-  { "id": 28, "office_name": "National Physical Laboratory SO", "hpo_group": "New Delhi HO", "pin_code": "1132" },
-  { "id": 29, "office_name": "NGT EXTENSION COUNTER", "hpo_group": "Indraprastha HPO", "pin_code": "1134" },
-  { "id": 30, "office_name": "Nirman Bhawan SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1135" },
-  { "id": 31, "office_name": "North Avenue SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1136" },
-  { "id": 32, "office_name": "Pahar Ganj SO", "hpo_group": "New Delhi HO", "pin_code": "1137" },
-  { "id": 33, "office_name": "Pandara Road SO", "hpo_group": "Indraprastha HPO", "pin_code": "1138" },
-  { "id": 34, "office_name": "Parliament House SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1139" },
-  { "id": 35, "office_name": "Patel Nagar East SO", "hpo_group": "New Delhi HO", "pin_code": "1140" },
-  { "id": 36, "office_name": "Patel Nagar SO Central Delhi", "hpo_group": "New Delhi HO", "pin_code": "1141" },
-  { "id": 37, "office_name": "Patel Nagar South SO", "hpo_group": "New Delhi HO", "pin_code": "1142" },
-  { "id": 38, "office_name": "Patel Nagar West SO", "hpo_group": "New Delhi HO", "pin_code": "1143" },
-  { "id": 39, "office_name": "Patiala House SO", "hpo_group": "Indraprastha HPO", "pin_code": "1144" },
-  { "id": 40, "office_name": "Pragati Maidan SO", "hpo_group": "Indraprastha HPO", "pin_code": "1145" },
-  { "id": 41, "office_name": "Rail Bhawan SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1146" },
-  { "id": 42, "office_name": "Rajender Nagar SO", "hpo_group": "New Delhi HO", "pin_code": "1147" },
-  { "id": 43, "office_name": "Rashtrapati Bhawan SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1149" },
-  { "id": 44, "office_name": "Rouse Avenue Extension Counter SO", "hpo_group": "Indraprastha HPO", "pin_code": "1150" },
-  { "id": 45, "office_name": "Sansad Marg HO", "hpo_group": "Sansad Marg HPO", "pin_code": "1151" },
-  { "id": 46, "office_name": "Sansadiya Soudh SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1152" },
-  { "id": 47, "office_name": "Sat Nagar SO", "hpo_group": "New Delhi HO", "pin_code": "1153" },
-  { "id": 48, "office_name": "Secretariat North SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1154" },
-  { "id": 49, "office_name": "Shastri Bhawan SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1155" },
-  { "id": 50, "office_name": "South Avenue SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1156" },
-  { "id": 51, "office_name": "SRT NAGAR EXTENSION COUNTER", "hpo_group": "New Delhi HO", "pin_code": "1157" },
-  { "id": 52, "office_name": "Supreme Court SO", "hpo_group": "Indraprastha HPO", "pin_code": "1158" },
-  { "id": 53, "office_name": "Swami Ram Tirth Nagar SO", "hpo_group": "New Delhi HO", "pin_code": "1159" },
-  { "id": 54, "office_name": "Udyog Bhawan SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1160" },
-  { "id": 55, "office_name": "Union Public Service Commission SO", "hpo_group": "Sansad Marg HPO", "pin_code": "1162" }
-];
+const OFFICES = [{"id":1,"name":"AGCR SO","hpo":"Indraprastha HPO","pin":"1101"},{"id":2,"name":"Ajmeri Gate Extn SO","hpo":"Indraprastha HPO","pin":"1102"},{"id":3,"name":"Anand Parbat Indl Area SO","hpo":"New Delhi HO","pin":"1103"},{"id":4,"name":"Anand Parbat SO","hpo":"New Delhi HO","pin":"1104"},{"id":5,"name":"Baroda House SO","hpo":"Indraprastha HPO","pin":"1105"},{"id":6,"name":"Bengali Market SO","hpo":"Sansad Marg HPO","pin":"1106"},{"id":7,"name":"CAT EXTENSION COUNTER","hpo":"Indraprastha HPO","pin":"1108"},{"id":8,"name":"Civic Centre PO","hpo":"Indraprastha HPO","pin":"1109"},{"id":9,"name":"Connaught Place SO","hpo":"Sansad Marg HPO","pin":"1110"},{"id":10,"name":"Dada Ghosh Bhawan SO","hpo":"New Delhi HO","pin":"1111"},{"id":11,"name":"Darya Ganj SO","hpo":"Indraprastha HPO","pin":"1112"},{"id":12,"name":"Delhi High Court Extension Counter SO","hpo":"Indraprastha HPO","pin":"1113"},{"id":13,"name":"Delhi High Court SO","hpo":"Indraprastha HPO","pin":"1114"},{"id":14,"name":"Desh Bandhu Gupta Road SO","hpo":"New Delhi HO","pin":"1115"},{"id":15,"name":"Election Commission SO","hpo":"Sansad Marg HPO","pin":"1116"},{"id":16,"name":"Gandhi Smarak Nidhi SO","hpo":"Indraprastha HPO","pin":"1117"},{"id":17,"name":"Guru Gobind Singh Marg SO","hpo":"New Delhi HO","pin":"1118"},{"id":18,"name":"IARI SO","hpo":"New Delhi HO","pin":"1119"},{"id":19,"name":"Inderpuri SO","hpo":"New Delhi HO","pin":"1122"},{"id":20,"name":"Indraprastha HO","hpo":"Indraprastha HPO","pin":"1124"},{"id":21,"name":"IPEstate SO","hpo":"Indraprastha HPO","pin":"1125"},{"id":22,"name":"Jama Masjid SO","hpo":"Indraprastha HPO","pin":"1126"},{"id":23,"name":"Karol Bagh SO","hpo":"New Delhi HO","pin":"1127"},{"id":24,"name":"Krishi Bhawan SO","hpo":"Sansad Marg HPO","pin":"1128"},{"id":25,"name":"Lady Harding Medical College SO","hpo":"Sansad Marg HPO","pin":"1129"},{"id":26,"name":"Minto Road SO","hpo":"Indraprastha HPO","pin":"1130"},{"id":27,"name":"Multani Dhanda SO","hpo":"New Delhi HO","pin":"1131"},{"id":28,"name":"National Physical Laboratory SO","hpo":"New Delhi HO","pin":"1132"},{"id":29,"name":"NGT EXTENSION COUNTER","hpo":"Indraprastha HPO","pin":"1134"},{"id":30,"name":"Nirman Bhawan SO","hpo":"Sansad Marg HPO","pin":"1135"},{"id":31,"name":"North Avenue SO","hpo":"Sansad Marg HPO","pin":"1136"},{"id":32,"name":"Pahar Ganj SO","hpo":"New Delhi HO","pin":"1137"},{"id":33,"name":"Pandara Road SO","hpo":"Indraprastha HPO","pin":"1138"},{"id":34,"name":"Parliament House SO","hpo":"Sansad Marg HPO","pin":"1139"},{"id":35,"name":"Patel Nagar East SO","hpo":"New Delhi HO","pin":"1140"},{"id":36,"name":"Patel Nagar SO Central Delhi","hpo":"New Delhi HO","pin":"1141"},{"id":37,"name":"Patel Nagar South SO","hpo":"New Delhi HO","pin":"1142"},{"id":38,"name":"Patel Nagar West SO","hpo":"New Delhi HO","pin":"1143"},{"id":39,"name":"Patiala House SO","hpo":"Indraprastha HPO","pin":"1144"},{"id":40,"name":"Pragati Maidan SO","hpo":"Indraprastha HPO","pin":"1145"},{"id":41,"name":"Rail Bhawan SO","hpo":"Sansad Marg HPO","pin":"1146"},{"id":42,"name":"Rajender Nagar SO","hpo":"New Delhi HO","pin":"1147"},{"id":43,"name":"Rashtrapati Bhawan SO","hpo":"Sansad Marg HPO","pin":"1149"},{"id":44,"name":"Rouse Avenue Extension Counter SO","hpo":"Indraprastha HPO","pin":"1150"},{"id":45,"name":"Sansad Marg HO","hpo":"Sansad Marg HPO","pin":"1151"},{"id":46,"name":"Sansadiya Soudh SO","hpo":"Sansad Marg HPO","pin":"1152"},{"id":47,"name":"Sat Nagar SO","hpo":"New Delhi HO","pin":"1153"},{"id":48,"name":"Secretariat North SO","hpo":"Sansad Marg HPO","pin":"1154"},{"id":49,"name":"Shastri Bhawan SO","hpo":"Sansad Marg HPO","pin":"1155"},{"id":50,"name":"South Avenue SO","hpo":"Sansad Marg HPO","pin":"1156"},{"id":51,"name":"SRT NAGAR EXTENSION COUNTER","hpo":"New Delhi HO","pin":"1157"},{"id":52,"name":"Supreme Court SO","hpo":"Indraprastha HPO","pin":"1158"},{"id":53,"name":"Swami Ram Tirth Nagar SO","hpo":"New Delhi HO","pin":"1159"},{"id":54,"name":"Udyog Bhawan SO","hpo":"Sansad Marg HPO","pin":"1160"},{"id":55,"name":"Union Public Service Commission SO","hpo":"Sansad Marg HPO","pin":"1162"}];
 
-const DEFAULT_PRODUCTS = [
-  { "id": 1, "code": "SB", "name": "Savings Bank Account (SB)", "short_name": "SB", "section": "SAVINGS", "entry_mode": "OPENED_AND_CLOSED", "display_order": 1 },
-  { "id": 2, "code": "RD", "name": "Recurring Deposit (RD)", "short_name": "RD", "section": "SAVINGS", "entry_mode": "OPENED_AND_CLOSED", "display_order": 2 },
-  { "id": 3, "code": "TD", "name": "Time Deposit (TD)", "short_name": "TD", "section": "SAVINGS", "entry_mode": "OPENED_AND_CLOSED", "display_order": 3 },
-  { "id": 4, "code": "MIS", "name": "Monthly Income Scheme (MIS)", "short_name": "MIS", "section": "SAVINGS", "entry_mode": "OPENED_AND_CLOSED", "display_order": 4 },
-  { "id": 5, "code": "PPF", "name": "Public Provident Fund (PPF)", "short_name": "PPF", "section": "SAVINGS", "entry_mode": "OPENED_AND_CLOSED", "display_order": 5 },
-  { "id": 6, "code": "NSC", "name": "National Savings Certificate (NSC)", "short_name": "NSC", "section": "SAVINGS", "entry_mode": "OPENED_AND_CLOSED", "display_order": 6 },
-  { "id": 7, "code": "KVP", "name": "Kisan Vikas Patra (KVP)", "short_name": "KVP", "section": "SAVINGS", "entry_mode": "OPENED_AND_CLOSED", "display_order": 7 },
-  { "id": 8, "code": "SCSS", "name": "Senior Citizens Savings Scheme (SCSS)", "short_name": "SCSS", "section": "SAVINGS", "entry_mode": "OPENED_AND_CLOSED", "display_order": 8 },
-  { "id": 9, "code": "SSA", "name": "Sukanya Samriddhi Account (SSA)", "short_name": "SSA", "section": "SAVINGS", "entry_mode": "OPENED_AND_CLOSED", "display_order": 9 },
-  { "id": 10, "code": "NSC_VIII", "name": "NSC VIII Issue (Discontinued)", "short_name": "NSC VIII", "section": "SAVINGS", "entry_mode": "CLOSED_ONLY", "display_order": 10 },
-  { "id": 11, "code": "IVP", "name": "Indira Vikas Patra (IVP)", "short_name": "IVP", "section": "SAVINGS", "entry_mode": "CLOSED_ONLY", "display_order": 11 },
-  { "id": 12, "code": "IPPB_REG", "name": "IPPB Regular Savings Account", "short_name": "Regular A/C", "section": "IPPB", "entry_mode": "OPENED_AND_CLOSED", "display_order": 12 },
-  { "id": 13, "code": "IPPB_PREM", "name": "IPPB Premium Savings Account", "short_name": "Premium A/C", "section": "IPPB", "entry_mode": "OPENED_AND_CLOSED", "display_order": 13 },
-  { "id": 14, "code": "IPPB_UPGRADE", "name": "Account Upgradation", "short_name": "A/C Upgrade", "section": "IPPB", "entry_mode": "ACHIEVEMENT_COUNT", "display_order": 14 },
-  { "id": 15, "code": "IPPB_AADHAAR", "name": "Aadhaar Seeding", "short_name": "Aadhaar Seed", "section": "IPPB", "entry_mode": "ACHIEVEMENT_COUNT", "display_order": 15 },
-  { "id": 16, "code": "IPPB_CELC", "name": "CELC (Child Enrolment Lite Client)", "short_name": "CELC", "section": "IPPB", "entry_mode": "ACHIEVEMENT_COUNT", "display_order": 16 },
-  { "id": 17, "code": "IPPB_LINKING", "name": "POSB–IPPB Linking", "short_name": "POSB-IPPB Link", "section": "IPPB", "entry_mode": "ACHIEVEMENT_COUNT", "display_order": 17 },
-  { "id": 18, "code": "IPPB_LI", "name": "Life Insurance (LI)", "short_name": "Life Ins.", "section": "IPPB", "entry_mode": "ACHIEVEMENT_COUNT", "display_order": 18 },
-  { "id": 19, "code": "IPPB_GI", "name": "General Insurance (GI)", "short_name": "Gen. Ins.", "section": "IPPB", "entry_mode": "ACHIEVEMENT_COUNT", "display_order": 19 },
-  { "id": 20, "code": "IPPB_PAI", "name": "Personal Accident Insurance (PAI)", "short_name": "PAI", "section": "IPPB", "entry_mode": "ACHIEVEMENT_COUNT", "display_order": 20 },
-  { "id": 21, "code": "IPPB_HI", "name": "Health Insurance (HI)", "short_name": "Health Ins.", "section": "IPPB", "entry_mode": "ACHIEVEMENT_COUNT", "display_order": 21 }
-];
+const PRODUCTS = [{"id":1,"code":"SB","name":"Savings Bank Account (SB)","short":"SB","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":2,"code":"RD","name":"Recurring Deposit (RD)","short":"RD","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":3,"code":"TD","name":"Time Deposit (TD)","short":"TD","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":4,"code":"MIS","name":"Monthly Income Scheme (MIS)","short":"MIS","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":5,"code":"PPF","name":"Public Provident Fund (PPF)","short":"PPF","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":6,"code":"NSC","name":"National Savings Certificate (NSC)","short":"NSC","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":7,"code":"KVP","name":"Kisan Vikas Patra (KVP)","short":"KVP","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":8,"code":"SCSS","name":"Senior Citizens Savings Scheme (SCSS)","short":"SCSS","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":9,"code":"SSA","name":"Sukanya Samriddhi Account (SSA)","short":"SSA","sec":"SAVINGS","mode":"OPENED_AND_CLOSED"},{"id":10,"code":"NSC_VIII","name":"NSC VIII Issue (Discontinued)","short":"NSC VIII","sec":"SAVINGS","mode":"CLOSED_ONLY"},{"id":11,"code":"IVP","name":"Indira Vikas Patra (IVP)","short":"IVP","sec":"SAVINGS","mode":"CLOSED_ONLY"},{"id":12,"code":"IPPB_REG","name":"IPPB Regular Savings Account","short":"Regular A/C","sec":"IPPB","mode":"OPENED_AND_CLOSED"},{"id":13,"code":"IPPB_PREM","name":"IPPB Premium Savings Account","short":"Premium A/C","sec":"IPPB","mode":"OPENED_AND_CLOSED"},{"id":14,"code":"IPPB_UPGRADE","name":"Account Upgradation","short":"A/C Upgrade","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"},{"id":15,"code":"IPPB_AADHAAR","name":"Aadhaar Seeding","short":"Aadhaar Seed","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"},{"id":16,"code":"IPPB_CELC","name":"CELC (Child Enrolment Lite Client)","short":"CELC","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"},{"id":17,"code":"IPPB_LINKING","name":"POSB–IPPB Linking","short":"POSB-IPPB Link","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"},{"id":18,"code":"IPPB_LI","name":"Life Insurance (LI)","short":"Life Ins.","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"},{"id":19,"code":"IPPB_GI","name":"General Insurance (GI)","short":"Gen. Ins.","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"},{"id":20,"code":"IPPB_PAI","name":"Personal Accident Insurance (PAI)","short":"PAI","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"},{"id":21,"code":"IPPB_HI","name":"Health Insurance (HI)","short":"Health Ins.","sec":"IPPB","mode":"ACHIEVEMENT_COUNT"}];
 
 async function ensureTables(env) {
   if (!env.DB) return;
@@ -89,30 +11,30 @@ async function ensureTables(env) {
     await env.DB.exec(`
       CREATE TABLE IF NOT EXISTS daily_submissions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        office_id INTEGER NOT NULL,
+        office_id INT NOT NULL,
         office_name TEXT NOT NULL,
         hpo_group TEXT NOT NULL,
         report_date TEXT NOT NULL,
         submitted_by TEXT,
         submitted_at TEXT,
         updated_at TEXT,
-        is_modified_by_admin INTEGER NOT NULL DEFAULT 0,
+        is_modified_by_admin INT DEFAULT 0,
         admin_notes TEXT,
         UNIQUE(office_id, report_date)
       );
       CREATE TABLE IF NOT EXISTS submission_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        submission_id INTEGER NOT NULL,
+        submission_id INT NOT NULL,
         product_code TEXT NOT NULL,
-        opened_count INTEGER NOT NULL DEFAULT 0,
-        closed_count INTEGER NOT NULL DEFAULT 0,
-        achievement_count INTEGER NOT NULL DEFAULT 0,
+        opened_count INT DEFAULT 0,
+        closed_count INT DEFAULT 0,
+        achievement_count INT DEFAULT 0,
         FOREIGN KEY(submission_id) REFERENCES daily_submissions(id) ON DELETE CASCADE,
         UNIQUE(submission_id, product_code)
       );
     `);
   } catch (e) {
-    console.error("Table initialization error:", e);
+    console.error("Table init error:", e);
   }
 }
 
@@ -127,9 +49,8 @@ export default {
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       });
 
-    const html = (content, status = 200) =>
+    const html = (content) =>
       new Response(content, {
-        status,
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
 
@@ -137,9 +58,17 @@ export default {
       await ensureTables(env);
     }
 
-    if (pathname === "/api/offices") return json({ offices: DEFAULT_OFFICES });
-    if (pathname === "/api/products") return json({ products: DEFAULT_PRODUCTS });
+    // 1. API: Offices
+    if (pathname === "/api/offices") {
+      return json({ offices: OFFICES });
+    }
 
+    // 2. API: Products
+    if (pathname === "/api/products") {
+      return json({ products: PRODUCTS });
+    }
+
+    // 3. API: Existing Submission Check
     if (pathname === "/api/submission") {
       const officeId = searchParams.get("office_id");
       const date = searchParams.get("date");
@@ -165,6 +94,7 @@ export default {
       }
     }
 
+    // 4. API: Submit / Update Performance Data
     if (pathname === "/api/submit" && request.method === "POST") {
       try {
         const body = await request.json();
@@ -172,12 +102,12 @@ export default {
 
         if (!office_id || !report_date) return json({ detail: "Office and Date required" }, 400);
 
-        const targetOffice = DEFAULT_OFFICES.find((o) => o.id === parseInt(office_id, 10));
+        const targetOffice = OFFICES.find((o) => o.id === parseInt(office_id, 10));
         if (!targetOffice) return json({ detail: "Invalid office selected" }, 400);
 
         if (!is_admin) {
-          if (String(targetOffice.pin_code).trim() !== String(pin).trim()) {
-            return json({ detail: "Invalid 4-digit Office Verification PIN for " + targetOffice.office_name }, 403);
+          if (String(targetOffice.pin).trim() !== String(pin).trim()) {
+            return json({ detail: "Invalid 4-digit Office Verification PIN for " + targetOffice.name }, 403);
           }
         }
 
@@ -198,20 +128,20 @@ export default {
         } else {
           const res = await env.DB.prepare(
             "INSERT INTO daily_submissions (office_id, office_name, hpo_group, report_date, submitted_by, submitted_at, updated_at, is_modified_by_admin, admin_notes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-          ).bind(office_id, targetOffice.office_name, targetOffice.hpo_group, report_date, submitted_by || "Staff", now, now, is_admin ? 1 : 0, admin_notes || null).run();
+          ).bind(office_id, targetOffice.name, targetOffice.hpo, report_date, submitted_by || "Staff", now, now, is_admin ? 1 : 0, admin_notes || null).run();
           subId = res.meta.last_row_id;
         }
 
-        for (const p of DEFAULT_PRODUCTS) {
+        for (const p of PRODUCTS) {
           const pData = (items && items[p.code]) || {};
           let opened = parseInt(pData.opened || 0);
           let closed = parseInt(pData.closed || 0);
           let achieve = parseInt(pData.achievement || 0);
 
-          if (p.entry_mode === "CLOSED_ONLY") { opened = 0; achieve = 0; }
-          if (p.entry_mode === "OPENED_ONLY") { closed = 0; achieve = 0; }
-          if (p.entry_mode === "ACHIEVEMENT_COUNT") { opened = 0; closed = 0; }
-          if (p.entry_mode === "OPENED_AND_CLOSED") { achieve = 0; }
+          if (p.mode === "CLOSED_ONLY") { opened = 0; achieve = 0; }
+          if (p.mode === "OPENED_ONLY") { closed = 0; achieve = 0; }
+          if (p.mode === "ACHIEVEMENT_COUNT") { opened = 0; closed = 0; }
+          if (p.mode === "OPENED_AND_CLOSED") { achieve = 0; }
 
           await env.DB.prepare(`
             INSERT INTO submission_items (submission_id, product_code, opened_count, closed_count, achievement_count)
@@ -229,6 +159,7 @@ export default {
       }
     }
 
+    // 5. API: Dashboard
     if (pathname === "/api/dashboard") {
       try {
         const date = searchParams.get("date") || new Date().toISOString().substring(0, 10);
@@ -237,7 +168,7 @@ export default {
         ).bind(date).all();
 
         const submittedIds = new Set(submissions.results.map((s) => s.office_id));
-        const pendingOffices = DEFAULT_OFFICES.filter((o) => !submittedIds.has(o.id));
+        const pendingOffices = OFFICES.filter((o) => !submittedIds.has(o.id));
 
         const items = await env.DB.prepare(`
           SELECT si.product_code,
@@ -254,7 +185,7 @@ export default {
         for (const it of items.results) itemsMap[it.product_code] = it;
 
         let totalSavingsO = 0, totalSavingsC = 0, totalIppbO = 0, totalIppbC = 0, totalIppbAch = 0;
-        const consolidated = DEFAULT_PRODUCTS.map((p) => {
+        const consolidated = PRODUCTS.map((p) => {
           const it = itemsMap[p.code] || { total_opened: 0, total_closed: 0, total_achievement: 0 };
           const row = {
             ...p,
@@ -262,11 +193,11 @@ export default {
             total_closed: it.total_closed || 0,
             total_achievement: it.total_achievement || 0
           };
-          if (p.section === "SAVINGS") {
+          if (p.sec === "SAVINGS") {
             totalSavingsO += row.total_opened;
             totalSavingsC += row.total_closed;
-          } else if (p.section === "IPPB") {
-            if (p.entry_mode === "OPENED_AND_CLOSED") {
+          } else if (p.sec === "IPPB") {
+            if (p.mode === "OPENED_AND_CLOSED") {
               totalIppbO += row.total_opened;
               totalIppbC += row.total_closed;
             } else {
@@ -277,12 +208,12 @@ export default {
         });
 
         const matrix = [];
-        for (const off of DEFAULT_OFFICES) {
+        for (const off of OFFICES) {
           const sub = submissions.results.find((s) => s.office_id === off.id);
           const row = {
             office_id: off.id,
-            office_name: off.office_name,
-            hpo_group: off.hpo_group,
+            office_name: off.name,
+            hpo_group: off.hpo,
             status: sub ? "SUBMITTED" : "PENDING",
             submitted_at: sub ? sub.submitted_at : null,
             updated_at: sub ? sub.updated_at : null,
@@ -308,10 +239,10 @@ export default {
         return json({
           report_date: date,
           metrics: {
-            total_offices: DEFAULT_OFFICES.length,
+            total_offices: OFFICES.length,
             submitted_count: submissions.results.length,
             pending_count: pendingOffices.length,
-            completion_pct: Math.round((submissions.results.length / DEFAULT_OFFICES.length) * 1000) / 10,
+            completion_pct: Math.round((submissions.results.length / OFFICES.length) * 1000) / 10,
             total_savings_opened: totalSavingsO,
             total_savings_closed: totalSavingsC,
             total_ippb_opened: totalIppbO,
@@ -328,6 +259,7 @@ export default {
       }
     }
 
+    // 6. API: WhatsApp Formatted Text
     if (pathname === "/api/whatsapp-text") {
       const date = searchParams.get("date") || new Date().toISOString().substring(0, 10);
       const dashReq = new Request(`${url.origin}/api/dashboard?date=${date}`);
@@ -344,7 +276,7 @@ export default {
         "*DAILY SAVINGS & IPPB PERFORMANCE REPORT*",
         `📅 *Date: ${displayDate}*`,
         "━━━━━━━━━━━━━━━━━━━━━━",
-        `📊 *Reporting Status:* ${m.submitted_count} /${m.total_offices} Offices`,
+        `📊 *Reporting Status:* ${m.submitted_count} / ${m.total_offices} Offices`,
         `⏳ *Pending Offices:* ${m.pending_count}`,
         `📈 *Completion Rate:* ${m.completion_pct}%`,
         "━━━━━━━━━━━━━━━━━━━━━━",
@@ -356,10 +288,10 @@ export default {
       ];
 
       for (const p of dash.consolidated_products) {
-        if (p.section === "SAVINGS") {
-          const sname = (p.short_name + "      ").substring(0, 6);
-          if (p.entry_mode === "CLOSED_ONLY") {
-            lines.push(`│ ${sname} │   --   │${String(p.total_closed).padStart(5, " ")} │`);
+        if (p.sec === "SAVINGS") {
+          const sname = (p.short + "      ").substring(0, 6);
+          if (p.mode === "CLOSED_ONLY") {
+            lines.push(`│ ${sname} │   --   │  ${String(p.total_closed).padStart(5, " ")} │`);
           } else {
             lines.push(`│ ${sname} │  ${String(p.total_opened).padStart(5, " ")} │  ${String(p.total_closed).padStart(5, " ")} │`);
           }
@@ -378,7 +310,7 @@ export default {
       );
 
       for (const p of dash.consolidated_products) {
-        if (p.section === "IPPB" && p.entry_mode === "ACHIEVEMENT_COUNT") {
+        if (p.sec === "IPPB" && p.mode === "ACHIEVEMENT_COUNT") {
           lines.push(`• ${p.name}: *${p.total_achievement}*`);
         }
       }
@@ -387,6 +319,7 @@ export default {
       return json({ text: lines.join("\n") });
     }
 
+    // 7. API: CSV Export
     if (pathname === "/api/export/csv") {
       const date = searchParams.get("date") || new Date().toISOString().substring(0, 10);
       const dashReq = new Request(`${url.origin}/api/dashboard?date=${date}`);
@@ -394,23 +327,23 @@ export default {
       const dash = await dashRes.json();
 
       const headers = ["Office Name", "HPO Group", "Status", "Submitted By", "Submission Time", "Last Updated"];
-      for (const p of DEFAULT_PRODUCTS) {
-        if (p.entry_mode === "OPENED_AND_CLOSED") {
-          headers.push(`${p.short_name} Opened`, `${p.short_name} Closed`);
-        } else if (p.entry_mode === "CLOSED_ONLY") {
-          headers.push(`${p.short_name} Closed`);
+      for (const p of PRODUCTS) {
+        if (p.mode === "OPENED_AND_CLOSED") {
+          headers.push(`${p.short} Opened`, `${p.short} Closed`);
+        } else if (p.mode === "CLOSED_ONLY") {
+          headers.push(`${p.short} Closed`);
         } else {
-          headers.push(`${p.short_name} Count`);
+          headers.push(`${p.short} Count`);
         }
       }
 
       const rows = [headers.map((h) => `"${h}"`).join(",")];
       for (const r of dash.office_matrix) {
         const line = [r.office_name, r.hpo_group, r.status, r.submitted_by || "", r.submitted_at || "", r.updated_at || ""];
-        for (const p of DEFAULT_PRODUCTS) {
+        for (const p of PRODUCTS) {
           const v = (r.counts && r.counts[p.code]) || { opened: 0, closed: 0, achievement: 0 };
-          if (p.entry_mode === "OPENED_AND_CLOSED") line.push(v.opened, v.closed);
-          else if (p.entry_mode === "CLOSED_ONLY") line.push(v.closed);
+          if (p.mode === "OPENED_AND_CLOSED") line.push(v.opened, v.closed);
+          else if (p.mode === "CLOSED_ONLY") line.push(v.closed);
           else line.push(v.achievement);
         }
         rows.push(line.map((val) => `"${val}"`).join(","));
@@ -424,119 +357,91 @@ export default {
       });
     }
 
-    if (pathname === "/admin") return html(getAdminHtml());
-    if (pathname === "/report") return html(getReportHtml());
-    return html(getIndexHtml());
+    if (pathname === "/admin") return html(renderAdminPage());
+    if (pathname === "/report") return html(renderReportPage());
+    return html(renderIndexPage());
   }
 };
 
-function getCommonCss() {
-  return `
-:root {
-  --primary: #C8102E; --primary-dark: #9E0C24; --secondary: #F8B133; --bg: #F8FAFC;
-  --card-bg: #FFFFFF; --text-main: #0F172A; --text-muted: #64748B; --border: #E2E8F0;
-  --success: #10B981; --success-bg: #ECFDF5; --warning: #F59E0B; --warning-bg: #FFFBEB;
-  --danger: #EF4444; --danger-bg: #FEF2F2; --info: #3B82F6; --info-bg: #EFF6FF;
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--font); background-color: var(--bg); color: var(--text-main); line-height: 1.5; padding-bottom: 50px; }
-.header-bar { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 16px 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-.brand-section { display: flex; align-items: center; gap: 12px; }
-.brand-icon { background: var(--secondary); color: var(--text-main); font-weight: 800; padding: 8px 12px; border-radius: 8px; font-size: 1.1rem; }
-.brand-title { font-size: 1.15rem; font-weight: 700; }
-.brand-sub { font-size: 0.85rem; opacity: 0.9; }
-.nav-links { display: flex; gap: 12px; }
-.nav-btn { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 6px 14px; border-radius: 6px; text-decoration: none; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
-.nav-btn:hover { background: rgba(255,255,255,0.25); }
-.container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
-.card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 24px; margin-bottom: 20px; }
-.card-title { font-size: 1.15rem; font-weight: 700; color: var(--primary); margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--border); padding-bottom: 8px; }
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-.stat-card { background: white; padding: 18px; border-radius: 10px; border: 1px solid var(--border); border-top: 4px solid var(--primary); }
-.stat-card.stat-success { border-top-color: var(--success); }
-.stat-card.stat-danger { border-top-color: var(--danger); }
-.stat-card.stat-warning { border-top-color: var(--warning); }
-.stat-label { font-size: 0.82rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); }
-.stat-val { font-size: 2rem; font-weight: 800; color: var(--text-main); margin-top: 4px; }
-.stat-sub { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; }
-.form-group { margin-bottom: 18px; }
-label { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 6px; }
-.form-control { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1.5px solid var(--border); font-size: 0.95rem; font-family: inherit; background: white; }
-.form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.15); }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-@media (max-width: 640px) { .grid-3 { grid-template-columns: 1fr; } }
-.entry-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-.entry-table th { background: #F1F5F9; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); padding: 10px 12px; text-align: left; border-bottom: 2px solid var(--border); }
-.entry-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-.entry-table tr:hover { background: #F8FAFC; }
-.prod-name { font-weight: 600; font-size: 0.92rem; }
-.prod-code { font-size: 0.78rem; background: #E2E8F0; color: #475569; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: 600; }
-.num-input { width: 90px; padding: 8px 10px; font-size: 1rem; font-weight: 600; text-align: center; border-radius: 6px; border: 1.5px solid var(--border); background: #FAFAFA; }
-.num-input:focus { background: white; border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(200, 16, 46, 0.15); }
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: none; text-decoration: none; }
-.btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover { background: var(--primary-dark); }
-.btn-warning { background: var(--warning); color: #78350F; }
-.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text-main); }
-.btn-outline:hover { background: #F1F5F9; }
-.badge { display: inline-block; padding: 4px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-.badge-success { background: var(--success-bg); color: #065F46; border: 1px solid #A7F3D0; }
-.badge-danger { background: var(--danger-bg); color: #991B1B; border: 1px solid #FECACA; }
-.badge-warning { background: var(--warning-bg); color: #92400E; border: 1px solid #FDE68A; }
-.badge-info { background: var(--info-bg); color: #1E40AF; border: 1px solid #BFDBFE; }
-.alert { padding: 14px 18px; border-radius: 8px; }
-.alert { padding: 14px 18px; border-radius: 8px; margin-bottom: 20px; font-size: 0.92rem; }
-.alert-warning { background: var(--warning-bg); border: 1px solid #FDE68A; color: #B45309; }
-.alert-success { background: var(--success-bg); border: 1px solid #A7F3D0; color: #065F46; }
-.alert-danger { background: var(--danger-bg); border: 1px solid #FECACA; color: #991B1B; }
-.progress-bar-container { background: #E2E8F0; height: 12px; border-radius: 6px; overflow: hidden; margin: 10px 0; }
-.progress-bar-fill { background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%); height: 100%; border-radius: 6px; transition: width 0.4s ease; }
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); display: none; align-items: center; justify-content: center; z-index: 999; padding: 16px; }
-.modal-content { background: white; border-radius: 12px; max-width: 500px; width: 100%; padding: 24px; }
+const PAGE_CSS = `
+:root { --primary:#C8102E; --primary-dark:#9E0C24; --secondary:#F8B133; --bg:#F8FAFC; --card:#FFF; --text:#0F172A; --muted:#64748B; --border:#E2E8F0; --green:#10B981; --red:#EF4444; --amber:#F59E0B; --blue:#3B82F6; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); line-height:1.5; padding-bottom:50px; }
+.header-bar { background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%); color:#FFF; padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+.brand { display:flex; align-items:center; gap:10px; }
+.brand-icon { background:var(--secondary); color:#1E293B; font-weight:800; padding:6px 10px; border-radius:6px; font-size:1.1rem; }
+.brand-title { font-size:1.1rem; font-weight:700; }
+.brand-sub { font-size:0.8rem; opacity:0.9; }
+.nav-btn { background:rgba(255,255,255,0.15); color:#FFF; border:1px solid rgba(255,255,255,0.3); padding:5px 12px; border-radius:6px; text-decoration:none; font-size:0.85rem; font-weight:600; cursor:pointer; }
+.container { max-width:1050px; margin:20px auto; padding:0 14px; }
+.card { background:var(--card); border-radius:10px; border:1px solid var(--border); padding:20px; margin-bottom:18px; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+.card-title { font-size:1.1rem; font-weight:700; color:var(--primary); margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--border); padding-bottom:6px; }
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin-bottom:18px; }
+.stat-card { background:#FFF; padding:16px; border-radius:8px; border:1px solid var(--border); border-top:4px solid var(--primary); }
+.stat-val { font-size:1.8rem; font-weight:800; color:var(--text); margin-top:2px; }
+.stat-label { font-size:0.75rem; font-weight:700; text-transform:uppercase; color:var(--muted); }
+.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+@media (max-width:640px) { .grid-3 { grid-template-columns:1fr; } }
+.form-group { margin-bottom:14px; }
+label { display:block; font-size:0.85rem; font-weight:600; margin-bottom:5px; }
+.form-control { width:100%; padding:9px 12px; border-radius:6px; border:1.5px solid var(--border); font-size:0.92rem; background:#FFF; font-family:inherit; }
+.form-control:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 2px rgba(200,16,46,0.15); }
+.entry-table { width:100%; border-collapse:collapse; margin-top:6px; }
+.entry-table th { background:#F1F5F9; font-size:0.8rem; font-weight:700; text-transform:uppercase; color:var(--muted); padding:8px 10px; text-align:left; border-bottom:2px solid var(--border); }
+.entry-table td { padding:8px 10px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.num-input { width:85px; padding:7px 8px; font-size:0.95rem; font-weight:600; text-align:center; border-radius:6px; border:1.5px solid var(--border); background:#FAFAFA; }
+.num-input:focus { background:#FFF; border-color:var(--primary); outline:none; }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:9px 18px; border-radius:6px; font-size:0.9rem; font-weight:600; cursor:pointer; border:none; text-decoration:none; }
+.btn-primary { background:var(--primary); color:#FFF; }
+.btn-warning { background:var(--amber); color:#78350F; }
+.btn-outline { background:transparent; border:1.5px solid var(--border); color:var(--text); }
+.badge { display:inline-block; padding:3px 7px; border-radius:99px; font-size:0.72rem; font-weight:700; text-transform:uppercase; }
+.badge-success { background:#ECFDF5; color:#065F46; }
+.badge-danger { background:#FEF2F2; color:#991B1B; }
+.badge-warning { background:#FFFBEB; color:#92400E; }
+.alert { padding:12px 16px; border-radius:6px; margin-bottom:16px; font-size:0.88rem; }
+.alert-warning { background:#FFFBEB; border:1px solid #FDE68A; color:#B45309; }
+.alert-success { background:#ECFDF5; border:1px solid #A7F3D0; color:#065F46; }
+.alert-danger { background:#FEF2F2; border:1px solid #FECACA; color:#991B1B; }
+.progress-bar-container { background:#E2E8F0; height:10px; border-radius:5px; overflow:hidden; margin:8px 0; }
+.progress-bar-fill { background:linear-gradient(90deg,var(--secondary) 0%,var(--primary) 100%); height:100%; border-radius:5px; transition:width 0.4s; }
+.modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.6); display:none; align-items:center; justify-content:center; z-index:999; padding:16px; }
+.modal-content { background:#FFF; border-radius:10px; max-width:480px; width:100%; padding:20px; }
 `;
-}
 
-function getIndexHtml() {
-  const css = getCommonCss();
+function renderIndexPage() {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>India Post - Daily Savings Performance Entry</title>
-  <style>${css}</style>
+  <style>` + PAGE_CSS + `</style>
 </head>
 <body>
   <header class="header-bar">
-    <div class="brand-section">
+    <div class="brand">
       <div class="brand-icon">IP</div>
       <div>
         <div class="brand-title">Department of Posts – India Post</div>
         <div class="brand-sub">New Delhi Central Division | Daily Performance Entry Portal</div>
       </div>
     </div>
-    <div class="nav-links">
+    <div style="display:flex; gap:10px;">
       <a href="/admin" class="nav-btn">📊 Admin Dashboard</a>
       <a href="/report" class="nav-btn">📱 WhatsApp Card</a>
     </div>
   </header>
 
   <main class="container">
-    <div id="updateBanner" class="alert alert-warning" style="display: none;">
+    <div id="updateBanner" class="alert alert-warning" style="display:none;">
       ⚠️ <strong>Existing Submission Found:</strong> <span id="updateBannerText"></span>
-      <div style="font-size:0.85rem; margin-top:4px;">You are currently in <strong>Update Mode</strong>. Submitting will update your office figures.</div>
+      <div style="font-size:0.8rem; margin-top:3px;">You are currently in <strong>Update Mode</strong>. Submitting will update your office figures.</div>
     </div>
-
-    <div id="statusAlert" class="alert" style="display: none;"></div>
+    <div id="statusAlert" class="alert" style="display:none;"></div>
 
     <form id="submissionForm" onsubmit="handleFormSubmit(event)">
-      <!-- 1. Office Identification -->
       <div class="card">
-        <div class="card-title">
-          <span>🏢 1. Office Identification</span>
-          <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">Mandatory</span>
-        </div>
+        <div class="card-title"><span>🏢 1. Office Identification</span><span style="font-size:0.75rem; color:var(--muted);">Mandatory</span></div>
         <div class="grid-3">
           <div class="form-group">
             <label for="officeSelect">Select Office Name *</label>
@@ -547,13 +452,460 @@ function getIndexHtml() {
           <div class="form-group">
             <label for="officePin">Office 4-Digit PIN *</label>
             <input type="password" id="officePin" class="form-control" placeholder="Enter 4-digit PIN" maxlength="6" required oninput="handlePinInput()">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-              <small style="color: var(--text-muted);">Prevents accidental cross-submission</small>
-              <label style="font-size: 0.78rem; font-weight: normal; margin: 0; cursor: pointer;">
-                <input type="checkbox" id="rememberPin" checked> Remember
-              </label>
+            <div style="display:flex; justify-content:space-between; margin-top:4px;">
+              <small style="color:var(--muted); font-size:0.75rem;">Prevents cross-submission</small>
+              <label style="font-size:0.75rem; margin:0;"><input type="checkbox" id="rememberPin" checked> Remember</label>
             </div>
           </div>
           <div class="form-group">
             <label for="reportDate">Reporting Date *</label>
-            <input type="date"
+            <input type="date" id="reportDate" class="form-control" required onchange="handleDateChange()">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="submittedBy">Submitted By (Official Name / Designation)</label>
+          <input type="text" id="submittedBy" class="form-control" placeholder="e.g. SPM / Postal Assistant">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>💰 2. Savings Bank (POSB) Performance</span><span class="badge badge-success">Section 1</span></div>
+        <h4 style="font-size:0.9rem; margin-bottom:6px;">A. Active Savings Schemes (Opening & Closing)</h4>
+        <div style="overflow-x:auto;">
+          <table class="entry-table">
+            <thead><tr><th style="width:50%;">Scheme Name</th><th style="width:25%; text-align:center;">Opened</th><th style="width:25%; text-align:center;">Closed</th></tr></thead>
+            <tbody id="savingsActiveBody"></tbody>
+          </table>
+        </div>
+        <h4 style="font-size:0.9rem; margin-top:18px; margin-bottom:6px;">B. Discontinued Savings Schemes (Closing Only)</h4>
+        <div style="overflow-x:auto;">
+          <table class="entry-table">
+            <thead><tr><th style="width:50%;">Scheme Name</th><th style="width:25%; text-align:center;">Opened</th><th style="width:25%; text-align:center;">Closed</th></tr></thead>
+            <tbody id="savingsDiscontinuedBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>📱 3. IPPB (India Post Payments Bank) Performance</span><span class="badge badge-warning">Section 2</span></div>
+        <h4 style="font-size:0.9rem; margin-bottom:6px;">A. IPPB Accounts (Opening & Closing)</h4>
+        <div style="overflow-x:auto;">
+          <table class="entry-table">
+            <thead><tr><th style="width:50%;">Account Type</th><th style="width:25%; text-align:center;">Opened</th><th style="width:25%; text-align:center;">Closed</th></tr></thead>
+            <tbody id="ippbAccountsBody"></tbody>
+          </table>
+        </div>
+        <h4 style="font-size:0.9rem; margin-top:18px; margin-bottom:6px;">B. IPPB Services & Activities (Achievement Count)</h4>
+        <div style="overflow-x:auto;">
+          <table class="entry-table">
+            <thead><tr><th style="width:70%;">Activity / Service</th><th style="width:30%; text-align:center;">Today's Count</th></tr></thead>
+            <tbody id="ippbServicesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:12px; justify-content:flex-end; align-items:center;">
+        <button type="button" class="btn btn-outline" onclick="resetFormToZeroes()">Clear All Fields to 0</button>
+        <button type="submit" id="submitBtn" class="btn btn-primary" style="padding:11px 28px; font-size:1rem;">📤 Submit Daily Performance</button>
+      </div>
+    </form>
+  </main>
+
+  <div id="zeroModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="color:#B45309; margin-bottom:10px;">⚠️ Zero Performance Confirmation</h3>
+      <p style="font-size:0.9rem; color:#475569; margin-bottom:18px;">You have entered <strong>0</strong> for all products.<br><br>Are you sure your office had <strong>zero transactions</strong> today?</p>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" class="btn btn-outline" onclick="closeZeroModal()">Cancel & Review</button>
+        <button type="button" class="btn btn-warning" onclick="executeSubmission(true)">Yes, Submit Zero Figures</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const OFFICES = ` + JSON.stringify(OFFICES) + `;
+    const PRODUCTS = ` + JSON.stringify(PRODUCTS) + `;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('reportDate').value = new Date().toISOString().substring(0, 10);
+      const sel = document.getElementById('officeSelect');
+      OFFICES.forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = o.id; opt.text = o.name + ' (' + o.hpo + ')';
+        sel.appendChild(opt);
+      });
+
+      const sActive = document.getElementById('savingsActiveBody');
+      const sDisc = document.getElementById('savingsDiscontinuedBody');
+      const iAcc = document.getElementById('ippbAccountsBody');
+      const iServ = document.getElementById('ippbServicesBody');
+
+      PRODUCTS.forEach(p => {
+        if (p.sec === 'SAVINGS' && p.mode === 'OPENED_AND_CLOSED') {
+          sActive.innerHTML += '<tr><td><strong>' + p.name + '</strong> <span style="font-size:0.75rem; background:#E2E8F0; padding:1px 5px; border-radius:4px;">' + p.short + '</span></td><td style="text-align:center;"><input type="number" min="0" id="prod_' + p.code + '_opened" class="num-input count-field" value="0"></td><td style="text-align:center;"><input type="number" min="0" id="prod_' + p.code + '_closed" class="num-input count-field" value="0"></td></tr>';
+        } else if (p.sec === 'SAVINGS' && p.mode === 'CLOSED_ONLY') {
+          sDisc.innerHTML += '<tr><td><strong>' + p.name + '</strong></td><td style="text-align:center; color:var(--muted); font-size:0.8rem; font-style:italic;">Discontinued</td><td style="text-align:center;"><input type="number" min="0" id="prod_' + p.code + '_closed" class="num-input count-field" value="0"></td></tr>';
+        } else if (p.sec === 'IPPB' && p.mode === 'OPENED_AND_CLOSED') {
+          iAcc.innerHTML += '<tr><td><strong>' + p.name + '</strong></td><td style="text-align:center;"><input type="number" min="0" id="prod_' + p.code + '_opened" class="num-input count-field" value="0"></td><td style="text-align:center;"><input type="number" min="0" id="prod_' + p.code + '_closed" class="num-input count-field" value="0"></td></tr>';
+        } else if (p.sec === 'IPPB' && p.mode === 'ACHIEVEMENT_COUNT') {
+          iServ.innerHTML += '<tr><td><strong>' + p.name + '</strong></td><td style="text-align:center;"><input type="number" min="0" id="prod_' + p.code + '_achievement" class="num-input count-field" value="0"></td></tr>';
+        }
+      });
+
+      const savedOfficeId = localStorage.getItem('ip_office_id');
+      const savedPin = localStorage.getItem('ip_office_pin');
+      if (savedOfficeId) {
+        sel.value = savedOfficeId;
+        if (savedPin) document.getElementById('officePin').value = savedPin;
+        checkExistingSubmission();
+      }
+    });
+
+    function handleOfficeChange() {
+      const officeId = document.getElementById('officeSelect').value;
+      const savedOfficeId = localStorage.getItem('ip_office_id');
+      const savedPin = localStorage.getItem('ip_office_pin');
+      if (savedOfficeId === officeId && savedPin) {
+        document.getElementById('officePin').value = savedPin;
+      }
+      checkExistingSubmission();
+    }
+    function handleDateChange() { checkExistingSubmission(); }
+    function handlePinInput() {
+      const rem = document.getElementById('rememberPin').checked;
+      const off = document.getElementById('officeSelect').value;
+      const pin = document.getElementById('officePin').value;
+      if (rem && off && pin.length >= 4) {
+        localStorage.setItem('ip_office_id', off);
+        localStorage.setItem('ip_office_pin', pin);
+      }
+    }
+
+    async function checkExistingSubmission() {
+      const officeId = document.getElementById('officeSelect').value;
+      const reportDate = document.getElementById('reportDate').value;
+      const updateBanner = document.getElementById('updateBanner');
+      const submitBtn = document.getElementById('submitBtn');
+      if (!officeId || !reportDate) return;
+
+      try {
+        const res = await fetch('/api/submission?office_id=' + officeId + '&date=' + reportDate);
+        const data = await res.json();
+        if (data.exists) {
+          const sub = data.submission;
+          document.getElementById('updateBannerText').innerHTML = 'Recorded by <strong>' + (sub.submitted_by || 'Staff') + '</strong> at <strong>' + sub.submitted_at + '</strong>';
+          updateBanner.style.display = 'block';
+          submitBtn.innerText = '✏️ Update Daily Performance';
+          submitBtn.className = 'btn btn-warning';
+          if (sub.items) {
+            for (const [code, item] of Object.entries(sub.items)) {
+              const oInp = document.getElementById('prod_' + code + '_opened');
+              const cInp = document.getElementById('prod_' + code + '_closed');
+              const aInp = document.getElementById('prod_' + code + '_achievement');
+              if (oInp) oInp.value = item.opened_count;
+              if (cInp) cInp.value = item.closed_count;
+              if (aInp) aInp.value = item.achievement_count;
+            }
+          }
+          if (sub.submitted_by) document.getElementById('submittedBy').value = sub.submitted_by;
+        } else {
+          updateBanner.style.display = 'none';
+          submitBtn.innerText = '📤 Submit Daily Performance';
+          submitBtn.className = 'btn btn-primary';
+          resetFormToZeroes();
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    function resetFormToZeroes() {
+      document.querySelectorAll('.count-field').forEach(f => f.value = '0');
+    }
+
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      const fields = document.querySelectorAll('.count-field');
+      let sum = 0;
+      for (const f of fields) {
+        const val = parseInt(f.value || 0, 10);
+        if (isNaN(val) || val < 0) {
+          showAlert('Negative numbers not allowed.', 'danger');
+          f.focus(); return;
+        }
+        sum += val;
+      }
+      if (sum === 0) {
+        document.getElementById('zeroModal').style.display = 'flex';
+        return;
+      }
+      executeSubmission(false);
+    }
+    function closeZeroModal() { document.getElementById('zeroModal').style.display = 'none'; }
+
+    async function executeSubmission(isZero) {
+      closeZeroModal();
+      const officeSelect = document.getElementById('officeSelect');
+      const officeId = officeSelect.value;
+      const pin = document.getElementById('officePin').value.trim();
+      const reportDate = document.getElementById('reportDate').value;
+      const submittedBy = document.getElementById('submittedBy').value.trim() || 'Staff';
+
+      const items = {};
+      document.querySelectorAll('[id^="prod_"][id$="_opened"]').forEach(inp => {
+        const code = inp.id.replace('prod_', '').replace('_opened', '');
+        if (!items[code]) items[code] = {};
+        items[code].opened = parseInt(inp.value || 0, 10);
+      });
+      document.querySelectorAll('[id^="prod_"][id$="_closed"]').forEach(inp => {
+        const code = inp.id.replace('prod_', '').replace('_closed', '');
+        if (!items[code]) items[code] = {};
+        items[code].closed = parseInt(inp.value || 0, 10);
+      });
+      document.querySelectorAll('[id^="prod_"][id$="_achievement"]').forEach(inp => {
+        const code = inp.id.replace('prod_', '').replace('_achievement', '');
+        if (!items[code]) items[code] = {};
+        items[code].achievement = parseInt(inp.value || 0, 10);
+      });
+
+      const payload = { office_id: parseInt(officeId, 10), pin, report_date: reportDate, submitted_by: submittedBy, items };
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true; submitBtn.innerText = 'Submitting...';
+
+      try {
+        const res = await fetch('/api/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showAlert(data.detail || 'Submission failed.', 'danger');
+        } else {
+          if (document.getElementById('rememberPin').checked) {
+            localStorage.setItem('ip_office_id', officeId);
+            localStorage.setItem('ip_office_pin', pin);
+          }
+          showAlert('✅ Success! Daily Performance ' + (data.action === 'UPDATE' ? 'Updated' : 'Submitted') + ' successfully.', 'success');
+          checkExistingSubmission();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } catch (err) {
+        showAlert('Network error occurred.', 'danger');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    function showAlert(msg, type) {
+      const el = document.getElementById('statusAlert');
+      el.className = 'alert alert-' + type;
+      el.innerHTML = msg; el.style.display = 'block';
+    }
+  </script>
+</body>
+</html>`;
+}
+
+function renderAdminPage() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - New Delhi Central Division</title>
+  <style>` + PAGE_CSS + `</style>
+</head>
+<body>
+  <header class="header-bar">
+    <div class="brand">
+      <div class="brand-icon">ADMIN</div>
+      <div>
+        <div class="brand-title">New Delhi Central Division – Executive Dashboard</div>
+        <div class="brand-sub">Daily Savings & IPPB Performance Live Monitoring</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <a href="/" class="nav-btn">📝 Office Portal</a>
+      <a href="/report" class="nav-btn">📱 WhatsApp Card</a>
+      <button onclick="downloadCSV()" class="nav-btn">📥 Export CSV</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card" style="padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <label style="margin:0; font-weight:700;">Date:</label>
+        <input type="date" id="adminDateSelect" class="form-control" style="width:auto; padding:5px 10px;" onchange="loadDashboard()">
+        <button class="btn btn-outline" style="padding:5px 12px;" onclick="loadDashboard()">🔄 Refresh</button>
+      </div>
+      <div style="font-size:0.85rem; color:var(--muted);">Operational Units: <strong>55 Offices</strong></div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Total Offices</div><div class="stat-val">55</div></div>
+      <div class="stat-card" style="border-top-color:var(--green);"><div class="stat-label">Submitted</div><div class="stat-val" style="color:var(--green);" id="kpiSub">0</div><div style="font-size:0.8rem; color:var(--muted);" id="kpiPct">0%</div></div>
+      <div class="stat-card" style="border-top-color:var(--red);"><div class="stat-label">Pending</div><div class="stat-val" style="color:var(--red);" id="kpiPend">55</div></div>
+      <div class="stat-card" style="border-top-color:var(--amber);"><div class="stat-label">Savings Accounts (O / C)</div><div class="stat-val"><span id="kpiSO">0</span> / <span id="kpiSC" style="font-size:1.1rem; color:var(--muted);">0</span></div></div>
+      <div class="stat-card" style="border-top-color:var(--blue);"><div class="stat-label">IPPB (Accounts / Services)</div><div class="stat-val"><span id="kpiIO">0</span> / <span id="kpiIA" style="font-size:1.1rem; color:var(--muted);">0</span></div></div>
+    </div>
+
+    <div class="card" style="border-left:5px solid var(--red);">
+      <div class="card-title"><span style="color:var(--red);">⏳ Pending Offices (<span id="pendingCount">0</span>)</span>
+        <button class="btn btn-outline" style="font-size:0.8rem; padding:4px 10px; border-color:var(--red); color:var(--red);" onclick="copyPending()">📋 Copy Pending for WhatsApp</button>
+      </div>
+      <div id="pendingList" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>📊 Consolidated Performance</span><a href="/report" id="repLink" class="btn btn-primary" style="font-size:0.8rem; padding:5px 12px;">📱 WhatsApp Card</a></div>
+      <div style="overflow-x:auto;">
+        <table class="entry-table">
+          <thead><tr><th>Product Name</th><th>Section</th><th style="text-align:center;">Opened</th><th style="text-align:center;">Closed</th><th style="text-align:center;">Net / Count</th></tr></thead>
+          <tbody id="summaryBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>📑 Office-wise Matrix (55 Offices)</span></div>
+      <div style="overflow-x:auto; max-height:480px;">
+        <table class="entry-table">
+          <thead style="position:sticky; top:0; z-index:5;"><tr><th>Office Name</th><th>HPO</th><th style="text-align:center;">Status</th><th>Time</th><th style="text-align:center;">Savings (O/C)</th><th style="text-align:center;">IPPB (O/C)</th></tr></thead>
+          <tbody id="matrixBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentData = null;
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('adminDateSelect').value = new Date().toISOString().substring(0, 10);
+      loadDashboard();
+    });
+
+    async function loadDashboard() {
+      const dt = document.getElementById('adminDateSelect').value;
+      document.getElementById('repLink').href = '/report?date=' + dt;
+      try {
+        const res = await fetch('/api/dashboard?date=' + dt);
+        currentData = await res.json();
+        renderDash(currentData);
+      } catch (e) { console.error(e); }
+    }
+
+    function renderDash(d) {
+      const m = d.metrics;
+      document.getElementById('kpiSub').innerText = m.submitted_count;
+      document.getElementById('kpiPct').innerText = m.completion_pct + '% Completion';
+      document.getElementById('kpiPend').innerText = m.pending_count;
+      document.getElementById('kpiSO').innerText = m.total_savings_opened;
+      document.getElementById('kpiSC').innerText = m.total_savings_closed;
+      document.getElementById('kpiIO').innerText = m.total_ippb_opened;
+      document.getElementById('kpiIA').innerText = m.total_ippb_achievements;
+
+      document.getElementById('pendingCount').innerText = d.pending_offices.length;
+      const pl = document.getElementById('pendingList');
+      if (d.pending_offices.length === 0) {
+        pl.innerHTML = '<span class="badge badge-success" style="font-size:0.85rem;">🎉 All 55 offices submitted!</span>';
+      } else {
+        pl.innerHTML = d.pending_offices.map(o => '<span class="badge badge-danger" style="font-size:0.75rem; padding:4px 8px;">❌ ' + o.name + ' (' + o.hpo + ')</span>').join('');
+      }
+
+      const sb = document.getElementById('summaryBody');
+      let html = '<tr style="background:#FFF1F2; font-weight:700;"><td colspan="5" style="color:var(--primary);">SAVINGS BANK (POSB)</td></tr>';
+      d.consolidated_products.filter(p => p.sec === 'SAVINGS').forEach(p => {
+        html += '<tr><td><strong>' + p.name + '</strong></td><td><span class="badge badge-success">POSB</span></td><td style="text-align:center;">' + (p.mode === 'CLOSED_ONLY' ? '--' : p.total_opened) + '</td><td style="text-align:center;">' + p.total_closed + '</td><td style="text-align:center; font-weight:700;">' + (p.mode === 'CLOSED_ONLY' ? -p.total_closed : (p.total_opened - p.total_closed)) + '</td></tr>';
+      });
+      html += '<tr style="background:#FFE4E6; font-weight:800;"><td>TOTAL SAVINGS</td><td>TOTAL</td><td style="text-align:center; color:var(--primary);">' + m.total_savings_opened + '</td><td style="text-align:center; color:#991B1B;">' + m.total_savings_closed + '</td><td style="text-align:center;">' + (m.total_savings_opened - m.total_savings_closed) + '</td></tr>';
+
+      html += '<tr style="background:#FEF3C7; font-weight:700;"><td colspan="5" style="color:#92400E;">IPPB</td></tr>';
+      d.consolidated_products.filter(p => p.sec === 'IPPB').forEach(p => {
+        if (p.mode === 'OPENED_AND_CLOSED') {
+          html += '<tr><td><strong>' + p.name + '</strong></td><td><span class="badge badge-warning">Account</span></td><td style="text-align:center;">' + p.total_opened + '</td><td style="text-align:center;">' + p.total_closed + '</td><td style="text-align:center; font-weight:700;">' + (p.total_opened - p.total_closed) + '</td></tr>';
+        } else {
+          html += '<tr><td><strong>' + p.name + '</strong></td><td><span class="badge badge-info">Service</span></td><td style="text-align:center;">--</td><td style="text-align:center;">--</td><td style="text-align:center; font-weight:800; color:var(--blue);">' + p.total_achievement + '</td></tr>';
+        }
+      });
+      sb.innerHTML = html;
+
+      const mb = document.getElementById('matrixBody');
+      mb.innerHTML = d.office_matrix.map(r => {
+        let so = 0, sc = 0;
+        if (r.counts) {
+          for (const v of Object.values(r.counts)) { so += (v.opened||0); sc += (v.closed||0); }
+        }
+        return '<tr><td><strong>' + r.office_name + '</strong></td><td><small>' + r.hpo_group + '</small></td><td style="text-align:center;">' + (r.status === 'SUBMITTED' ? '<span class="badge badge-success">Submitted</span>' : '<span class="badge badge-danger">Pending</span>') + '</td><td style="font-size:0.75rem; color:var(--muted);">' + (r.submitted_at || '--') + '</td><td style="text-align:center; font-weight:600;">' + (r.status === 'SUBMITTED' ? so + ' / ' + sc : '--') + '</td><td style="text-align:center; font-weight:600;">' + (r.status === 'SUBMITTED' ? ((r.counts?.IPPB_REG?.opened||0) + (r.counts?.IPPB_PREM?.opened||0)) + ' / ' + ((r.counts?.IPPB_REG?.closed||0) + (r.counts?.IPPB_PREM?.closed||0)) : '--') + '</td></tr>';
+      }).join('');
+    }
+
+    async function copyPending() {
+      if (!currentData || currentData.pending_offices.length === 0) { alert('All offices submitted!'); return; }
+      const dt = document.getElementById('adminDateSelect').value;
+      const list = currentData.pending_offices.map((o, i) => (i+1) + '. *' + o.name + '* (' + o.hpo + ')').join('\\n');
+      const text = '⚠️ *PENDING DAILY SAVINGS REPORT ALERT*\\nNew Delhi Central Division\\n📅 *Date: ' + dt + '*\\n\\n' + list + '\\n\\nKindly submit immediately.';
+      await navigator.clipboard.writeText(text);
+      alert('📋 Copied ' + currentData.pending_offices.length + ' pending offices to clipboard!');
+    }
+
+    function downloadCSV() {
+      const dt = document.getElementById('adminDateSelect').value;
+      window.location.href = '/api/export/csv?date=' + dt;
+    }
+  </script>
+</body>
+</html>`;
+}
+
+function renderReportPage() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Performance Report Card</title>
+  <style>` + PAGE_CSS + `</style>
+</head>
+<body>
+  <header class="header-bar">
+    <div class="brand">
+      <div class="brand-icon">WHATSAPP</div>
+      <div><div class="brand-title">Daily Performance Report Card</div><div class="brand-sub">WhatsApp Formats</div></div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <a href="/admin" class="nav-btn">📊 Admin Dashboard</a>
+      <a href="/" class="nav-btn">📝 Office Portal</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card" style="padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <label style="margin:0; font-weight:700;">Date:</label>
+        <input type="date" id="repDate" class="form-control" style="width:auto; padding:5px 10px;" onchange="loadRep()">
+      </div>
+      <button class="btn btn-primary" onclick="copyWAText()">📋 Copy WhatsApp Text</button>
+    </div>
+
+    <div class="card" style="max-width:650px; margin:0 auto;">
+      <div class="card-title"><span>💬 Formatted WhatsApp Text</span><button class="btn btn-outline" style="padding:3px 8px; font-size:0.8rem;" onclick="copyWAText()">Copy</button></div>
+      <textarea id="waPreview" class="form-control" rows="18" readonly style="font-family:monospace; font-size:0.85rem; background:#F8FAFC;"></textarea>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('repDate').value = new Date().toISOString().substring(0, 10);
+      loadRep();
+    });
+    async function loadRep() {
+      const dt = document.getElementById('repDate').value;
+      const res = await fetch('/api/whatsapp-text?date=' + dt);
+      const d = await res.json();
+      document.getElementById('waPreview').value = d.text;
+    }
+    async function copyWAText() {
+      await navigator.clipboard.writeText(document.getElementById('waPreview').value);
+      alert('📋 Formatted WhatsApp text copied to clipboard!');
+    }
+  </script>
+</body>
+</html>`;
+}
