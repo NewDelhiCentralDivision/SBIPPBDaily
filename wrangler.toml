@@ -1,0 +1,8 @@
+name = "sbippbdaily"
+main = "worker.js"
+compatibility_date = "2024-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sbippb-db"
+database_id = "sbippb-db"
