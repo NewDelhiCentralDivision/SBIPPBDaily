@@ -5,4 +5,4 @@ compatibility_date = "2024-09-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "sbippb-db"
-database_id = "sbippb-db"
+database_id = "da9aa9ab-a3d4-4801-be8c-fb5cf9ddbe58"
