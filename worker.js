@@ -1,8 +1,173 @@
+
+const SEED_SQL = `CREATE TABLE IF NOT EXISTS offices (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    office_name TEXT UNIQUE NOT NULL,
+    hpo_group TEXT NOT NULL,
+    pin_code TEXT NOT NULL,
+    is_operational INTEGER NOT NULL DEFAULT 1,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS products (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    short_name TEXT NOT NULL,
+    section TEXT NOT NULL,
+    entry_mode TEXT NOT NULL,
+    display_order INTEGER NOT NULL DEFAULT 0,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS daily_submissions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    office_id INTEGER NOT NULL,
+    report_date TEXT NOT NULL,
+    submitted_by TEXT,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_modified_by_admin INTEGER NOT NULL DEFAULT 0,
+    admin_notes TEXT,
+    FOREIGN KEY(office_id) REFERENCES offices(id),
+    UNIQUE(office_id, report_date)
+);
+CREATE TABLE IF NOT EXISTS submission_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    submission_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    opened_count INTEGER NOT NULL DEFAULT 0,
+    closed_count INTEGER NOT NULL DEFAULT 0,
+    achievement_count INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY(submission_id) REFERENCES daily_submissions(id) ON DELETE CASCADE,
+    FOREIGN KEY(product_id) REFERENCES products(id),
+    UNIQUE(submission_id, product_id)
+);
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    submission_id INTEGER,
+    office_name TEXT,
+    report_date TEXT,
+    action TEXT NOT NULL,
+    performed_by TEXT NOT NULL,
+    payload_json TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('AGCR SO', 'Indraprastha HPO', '1101', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Ajmeri Gate Extn SO', 'Indraprastha HPO', '1102', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Anand Parbat Indl Area SO', 'New Delhi HO', '1103', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Anand Parbat SO', 'New Delhi HO', '1104', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Baroda House SO', 'Indraprastha HPO', '1105', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Bengali Market SO', 'Sansad Marg HPO', '1106', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('BPC IPHO', 'Indraprastha HPO', '1107', 0, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('CAT EXTENSION COUNTER', 'Indraprastha HPO', '1108', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Civic Centre PO', 'Indraprastha HPO', '1109', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Connaught Place SO', 'Sansad Marg HPO', '1110', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Dada Ghosh Bhawan SO', 'New Delhi HO', '1111', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Darya Ganj SO', 'Indraprastha HPO', '1112', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Delhi High Court Extension Counter SO', 'Indraprastha HPO', '1113', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Delhi High Court SO', 'Indraprastha HPO', '1114', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Desh Bandhu Gupta Road SO', 'New Delhi HO', '1115', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Election Commission SO', 'Sansad Marg HPO', '1116', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Gandhi Smarak Nidhi SO', 'Indraprastha HPO', '1117', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Guru Gobind Singh Marg SO', 'New Delhi HO', '1118', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('IARI SO', 'New Delhi HO', '1119', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('IDC Patel Nagar', 'New Delhi HO', '1120', 0, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('IDC SRT NAGAR PO', 'New Delhi HO', '1121', 0, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Inderpuri SO', 'New Delhi HO', '1122', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Indraprastha DC', 'Indraprastha HPO', '1123', 0, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Indraprastha HO', 'Indraprastha HPO', '1124', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('IPEstate SO', 'Indraprastha HPO', '1125', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Jama Masjid SO', 'Indraprastha HPO', '1126', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Karol Bagh SO', 'New Delhi HO', '1127', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Krishi Bhawan SO', 'Sansad Marg HPO', '1128', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Lady Harding Medical College SO', 'Sansad Marg HPO', '1129', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Minto Road SO', 'Indraprastha HPO', '1130', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Multani Dhanda SO', 'New Delhi HO', '1131', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('National Physical Laboratory SO', 'New Delhi HO', '1132', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('NDC NDHO', 'New Delhi HO', '1133', 0, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('NGT EXTENSION COUNTER', 'Indraprastha HPO', '1134', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Nirman Bhawan SO', 'Sansad Marg HPO', '1135', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('North Avenue SO', 'Sansad Marg HPO', '1136', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Pahar Ganj SO', 'New Delhi HO', '1137', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Pandara Road SO', 'Indraprastha HPO', '1138', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Parliament House SO', 'Sansad Marg HPO', '1139', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Patel Nagar East SO', 'New Delhi HO', '1140', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Patel Nagar SO Central Delhi', 'New Delhi HO', '1141', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Patel Nagar South SO', 'New Delhi HO', '1142', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Patel Nagar West SO', 'New Delhi HO', '1143', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Patiala House SO', 'Indraprastha HPO', '1144', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Pragati Maidan SO', 'Indraprastha HPO', '1145', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Rail Bhawan SO', 'Sansad Marg HPO', '1146', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Rajender Nagar SO', 'New Delhi HO', '1147', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Rashtrapati Bhawan DC', 'Sansad Marg HPO', '1148', 0, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Rashtrapati Bhawan SO', 'Sansad Marg HPO', '1149', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Rouse Avenue Extension Counter SO', 'Indraprastha HPO', '1150', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Sansad Marg HO', 'Sansad Marg HPO', '1151', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Sansadiya Soudh SO', 'Sansad Marg HPO', '1152', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Sat Nagar SO', 'New Delhi HO', '1153', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Secretariat North SO', 'Sansad Marg HPO', '1154', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Shastri Bhawan SO', 'Sansad Marg HPO', '1155', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('South Avenue SO', 'Sansad Marg HPO', '1156', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('SRT NAGAR EXTENSION COUNTER', 'New Delhi HO', '1157', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Supreme Court SO', 'Indraprastha HPO', '1158', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Swami Ram Tirth Nagar SO', 'New Delhi HO', '1159', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Udyog Bhawan SO', 'Sansad Marg HPO', '1160', 1, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Union Public Service Commission DC', 'Sansad Marg HPO', '1161', 0, 1);
+INSERT OR IGNORE INTO offices (office_name, hpo_group, pin_code, is_operational, is_active) VALUES ('Union Public Service Commission SO', 'Sansad Marg HPO', '1162', 1, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('SB', 'Savings Bank Account (SB)', 'SB', 'SAVINGS', 'OPENED_AND_CLOSED', 1, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('RD', 'Recurring Deposit (RD)', 'RD', 'SAVINGS', 'OPENED_AND_CLOSED', 2, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('TD', 'Time Deposit (TD)', 'TD', 'SAVINGS', 'OPENED_AND_CLOSED', 3, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('MIS', 'Monthly Income Scheme (MIS)', 'MIS', 'SAVINGS', 'OPENED_AND_CLOSED', 4, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('PPF', 'Public Provident Fund (PPF)', 'PPF', 'SAVINGS', 'OPENED_AND_CLOSED', 5, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('NSC', 'National Savings Certificate (NSC)', 'NSC', 'SAVINGS', 'OPENED_AND_CLOSED', 6, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('KVP', 'Kisan Vikas Patra (KVP)', 'KVP', 'SAVINGS', 'OPENED_AND_CLOSED', 7, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('SCSS', 'Senior Citizens Savings Scheme (SCSS)', 'SCSS', 'SAVINGS', 'OPENED_AND_CLOSED', 8, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('SSA', 'Sukanya Samriddhi Account (SSA)', 'SSA', 'SAVINGS', 'OPENED_AND_CLOSED', 9, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('NSC_VIII', 'NSC VIII Issue (Discontinued)', 'NSC VIII', 'SAVINGS', 'CLOSED_ONLY', 10, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('IVP', 'Indira Vikas Patra (IVP)', 'IVP', 'SAVINGS', 'CLOSED_ONLY', 11, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('IPPB_REG', 'IPPB Regular Savings Account', 'Regular A/C', 'IPPB', 'OPENED_AND_CLOSED', 12, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('IPPB_PREM', 'IPPB Premium Savings Account', 'Premium A/C', 'IPPB', 'OPENED_AND_CLOSED', 13, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('IPPB_UPGRADE', 'Account Upgradation', 'A/C Upgrade', 'IPPB', 'ACHIEVEMENT_COUNT', 14, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('IPPB_AADHAAR', 'Aadhaar Seeding', 'Aadhaar Seed', 'IPPB', 'ACHIEVEMENT_COUNT', 15, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('IPPB_CELC', 'CELC (Child Enrolment Lite Client)', 'CELC', 'IPPB', 'ACHIEVEMENT_COUNT', 16, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('IPPB_LINKING', 'POSB–IPPB Linking', 'POSB-IPPB Link', 'IPPB', 'ACHIEVEMENT_COUNT', 17, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('IPPB_LI', 'Life Insurance (LI)', 'Life Ins.', 'IPPB', 'ACHIEVEMENT_COUNT', 18, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('IPPB_GI', 'General Insurance (GI)', 'Gen. Ins.', 'IPPB', 'ACHIEVEMENT_COUNT', 19, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('IPPB_PAI', 'Personal Accident Insurance (PAI)', 'PAI', 'IPPB', 'ACHIEVEMENT_COUNT', 20, 1);
+INSERT OR IGNORE INTO products (code, name, short_name, section, entry_mode, display_order, is_active) VALUES ('IPPB_HI', 'Health Insurance (HI)', 'Health Ins.', 'IPPB', 'ACHIEVEMENT_COUNT', 21, 1);`;
+
+async function ensureDatabaseInitialized(env) {
+  try {
+    const test = await env.DB.prepare("SELECT count(*) as count FROM offices").first();
+    if (test && test.count > 0) return;
+  } catch (e) {
+    // Table does not exist or empty
+  }
+  try {
+    await env.DB.exec(SEED_SQL);
+  } catch (err) {
+    console.error("Auto-seed error:", err);
+  }
+}
+
 // Cloudflare Worker for India Post - New Delhi Central Division Savings Monitor
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const { pathname, searchParams } = url;
+        const { pathname, searchParams } = url;
+
+    // Auto-initialize DB on first request if empty
+    if (pathname === "/setup" || pathname === "/api/offices" || pathname === "/" || pathname === "/admin") {
+      await ensureDatabaseInitialized(env);
+    }
+
+    // Manual setup / PIN directory view route
+    if (pathname === "/setup") {
+      const offices = await env.DB.prepare("SELECT id, office_name, hpo_group, pin_code FROM offices WHERE is_operational = 1 ORDER BY office_name ASC").all();
+      let tableRows = offices.results.map((o, idx) => `<tr><td>${idx+1}</td><td><strong>${o.office_name}</strong></td><td>${o.hpo_group}</td><td><code style="background:#FEF3C7; color:#B45309; padding:2px 8px; font-weight:700; border-radius:4px; font-size:1rem;">${o.pin_code}</code></td></tr>`).join("");
+      return html(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Setup & Office PIN Directory</title><style>body{font-family:-apple-system,sans-serif;background:#F8FAFC;padding:30px;color:#0F172A;}table{width:100%;border-collapse:collapse;background:white;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);}th,td{padding:10px 14px;border-bottom:1px solid #E2E8F0;text-align:left;}th{background:#F1F5F9;font-size:0.85rem;}h1{color:#C8102E;margin-bottom:10px;}a{color:#C8102E;text-decoration:none;font-weight:600;}</style></head><body><h1>✅ Database Initialized Successfully</h1><p>All 55 operational offices and 21 Savings/IPPB products are active in Cloudflare D1.</p><p><a href="/">👈 Go to Daily Performance Entry Portal</a> | <a href="/admin">📊 Go to Admin Dashboard</a></p><h2 style="margin-top:24px; margin-bottom:12px;">Office PIN Directory (Passcodes)</h2><table><thead><tr><th>#</th><th>Office Name</th><th>HPO Group</th><th>4-Digit PIN</th></tr></thead><tbody>${tableRows}</tbody></table></body></html>`);
+    }
+
 
     const json = (data, status = 200) =>
       new Response(JSON.stringify(data), {
@@ -16,7 +181,7 @@ export default {
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
 
-    // 1. API: Offices List (55 Operational Offices)
+    // API: Offices
     if (pathname === "/api/offices") {
       try {
         const { results } = await env.DB.prepare(
@@ -28,7 +193,7 @@ export default {
       }
     }
 
-    // 2. API: Products List (21 Savings & IPPB Products)
+    // API: Products
     if (pathname === "/api/products") {
       try {
         const { results } = await env.DB.prepare(
@@ -40,7 +205,7 @@ export default {
       }
     }
 
-    // 3. API: Existing Submission Check
+    // API: Submission check
     if (pathname === "/api/submission") {
       const officeId = searchParams.get("office_id");
       const date = searchParams.get("date");
@@ -66,7 +231,7 @@ export default {
       }
     }
 
-    // 4. API: Submit / Update Performance Data
+    // API: Submit / Update
     if (pathname === "/api/submit" && request.method === "POST") {
       try {
         const body = await request.json();
@@ -102,6 +267,7 @@ export default {
           subId = res.meta.last_row_id;
         }
 
+        // Upsert items
         const prods = await env.DB.prepare("SELECT id, code, entry_mode FROM products WHERE is_active = 1").all();
         for (const p of prods.results) {
           const pData = (items && items[p.code]) || {};
@@ -130,7 +296,7 @@ export default {
       }
     }
 
-    // 5. API: Dashboard Metrics & Consolidated Totals
+    // API: Dashboard
     if (pathname === "/api/dashboard") {
       try {
         const date = searchParams.get("date") || new Date().toISOString().substring(0, 10);
@@ -223,7 +389,7 @@ export default {
       }
     }
 
-    // 6. API: WhatsApp Formatted Text
+    // API: WhatsApp Text
     if (pathname === "/api/whatsapp-text") {
       const date = searchParams.get("date") || new Date().toISOString().substring(0, 10);
       const dashReq = new Request(`${url.origin}/api/dashboard?date=${date}`);
@@ -232,7 +398,7 @@ export default {
       const m = dash.metrics;
 
       const pParts = date.split("-");
-      const displayDate = pParts.length === 3 ? `${pParts}.${pParts}.${pParts[0]}` : date;
+      const displayDate = pParts.length === 3 ? `${pParts[2]}.${pParts[1]}.${pParts[0]}` : date;
 
       const lines = [
         "📮 *DEPARTMENT OF POSTS – INDIA POST*",
@@ -283,7 +449,7 @@ export default {
       return json({ text: lines.join("\n") });
     }
 
-    // 7. API: CSV Export
+    // API: CSV Export
     if (pathname === "/api/export/csv") {
       const date = searchParams.get("date") || new Date().toISOString().substring(0, 10);
       const dashReq = new Request(`${url.origin}/api/dashboard?date=${date}`);
@@ -323,10 +489,20 @@ export default {
     }
 
     // -------------------------------------------------------------
-    // FRONTEND HTML ROUTING
+    // FRONTEND HTML PAGES
     // -------------------------------------------------------------
-    if (pathname === "/admin") return html(getAdminHtml());
-    if (pathname === "/report") return html(getReportHtml());
+
+    // Page: Admin Dashboard (/admin)
+    if (pathname === "/admin") {
+      return html(getAdminHtml());
+    }
+
+    // Page: WhatsApp Report Card (/report)
+    if (pathname === "/report") {
+      return html(getReportHtml());
+    }
+
+    // Page: Office Data Entry (/)
     return html(getIndexHtml());
   }
 };
@@ -366,7 +542,8 @@ label { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 6px
 .form-control { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1.5px solid var(--border); font-size: 0.95rem; font-family: inherit; background: white; }
 .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.15); }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-@media (max-width: 640px) { .grid-3 { grid-template-columns: 1fr; } }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .grid-3, .grid-2 { grid-template-columns: 1fr; } }
 .entry-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
 .entry-table th { background: #F1F5F9; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); padding: 10px 12px; text-align: left; border-bottom: 2px solid var(--border); }
 .entry-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
@@ -481,7 +658,7 @@ function getIndexHtml() {
                 <th style="width: 25%; text-align: center;">Closed (Count)</th>
               </tr>
             </thead>
-            <tbody id="savingsActiveBody"><tr><td colspan="3" style="text-align:center;">Loading products from D1...</td></tr></tbody>
+            <tbody id="savingsActiveBody"><tr><td colspan="3" style="text-align:center;">Loading products...</td></tr></tbody>
           </table>
         </div>
 
@@ -560,11 +737,13 @@ function getIndexHtml() {
   <script>
     let allProducts = [];
     document.addEventListener('DOMContentLoaded', async () => {
+      // Set today's date in local time
       const today = new Date().toISOString().substring(0, 10);
       document.getElementById('reportDate').value = today;
 
       await Promise.all([loadOffices(), loadProducts()]);
 
+      // Restore saved office and PIN
       const savedOfficeId = localStorage.getItem('ip_office_id');
       const savedPin = localStorage.getItem('ip_office_pin');
       if (savedOfficeId) {
@@ -982,6 +1161,7 @@ function getAdminHtml() {
       document.getElementById('progressBarText').innerText = \`\${m.submitted_count} of \${m.total_offices} Submitted (\${m.completion_pct}%)\`;
       document.getElementById('progressBarFill').style.width = \`\${m.completion_pct}%\`;
 
+      // Pending
       document.getElementById('pendingCountBadge').innerText = data.pending_offices.length;
       const pendCont = document.getElementById('pendingContainer');
       if (data.pending_offices.length === 0) {
@@ -990,6 +1170,7 @@ function getAdminHtml() {
         pendCont.innerHTML = data.pending_offices.map(o => \`<span class="badge badge-danger" style="font-size:0.82rem; padding:6px 10px;">❌ \${o.office_name} <small>(\${o.hpo_group})</small></span>\`).join('');
       }
 
+      // Consolidated summary
       const sumBody = document.getElementById('consolidatedSummaryBody');
       let sHtml = '<tr style="background:#FFF1F2; font-weight:700;"><td colspan="5" style="color:var(--primary);">SAVINGS BANK (POSB)</td></tr>';
       data.consolidated_products.filter(p => p.section === 'SAVINGS').forEach(p => {
@@ -1031,6 +1212,7 @@ function getAdminHtml() {
       });
       sumBody.innerHTML = sHtml;
 
+      // Matrix
       renderMatrix(data.office_matrix);
     }
 
@@ -1202,6 +1384,7 @@ function getReportHtml() {
         document.getElementById('rcKpiPending').innerText = m.pending_count;
         document.getElementById('rcKpiCompletion').innerText = \`\${m.completion_pct}%\`;
 
+        // Render Savings
         const sb = document.getElementById('rcSavingsBody');
         let sHtml = '';
         dashRes.consolidated_products.filter(p => p.section === 'SAVINGS').forEach(p => {
@@ -1218,6 +1401,7 @@ function getReportHtml() {
         </tr>\`;
         sb.innerHTML = sHtml;
 
+        // Render IPPB Accounts
         const ib = document.getElementById('rcIppbBody');
         let iHtml = '';
         dashRes.consolidated_products.filter(p => p.section === 'IPPB' && p.entry_mode === 'OPENED_AND_CLOSED').forEach(p => {
@@ -1234,6 +1418,7 @@ function getReportHtml() {
         </tr>\`;
         ib.innerHTML = iHtml;
 
+        // Render IPPB Services
         const ig = document.getElementById('rcIppbServicesGrid');
         ig.innerHTML = dashRes.consolidated_products.filter(p => p.section === 'IPPB' && p.entry_mode === 'ACHIEVEMENT_COUNT').map(p => \`
           <div style="background:#F8FAFC; border:1px solid var(--border); padding:6px 10px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
