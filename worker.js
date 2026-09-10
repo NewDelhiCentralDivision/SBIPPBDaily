@@ -1,5 +1,5 @@
 // Cloudflare Worker: India Post New Delhi Central Division Savings Monitor
-// No PIN Verification - Direct Office Dropdown Submission
+// Production Build with WhatsApp Report Card, PNG Exporter & No-PIN Submission
 
 const OFFICES = [{"id":1,"name":"AGCR SO","hpo":"Indraprastha HPO"},{"id":2,"name":"Ajmeri Gate Extn SO","hpo":"Indraprastha HPO"},{"id":3,"name":"Anand Parbat Indl Area SO","hpo":"New Delhi HO"},{"id":4,"name":"Anand Parbat SO","hpo":"New Delhi HO"},{"id":5,"name":"Baroda House SO","hpo":"Indraprastha HPO"},{"id":6,"name":"Bengali Market SO","hpo":"Sansad Marg HPO"},{"id":7,"name":"CAT EXTENSION COUNTER","hpo":"Indraprastha HPO"},{"id":8,"name":"Civic Centre PO","hpo":"Indraprastha HPO"},{"id":9,"name":"Connaught Place SO","hpo":"Sansad Marg HPO"},{"id":10,"name":"Dada Ghosh Bhawan SO","hpo":"New Delhi HO"},{"id":11,"name":"Darya Ganj SO","hpo":"Indraprastha HPO"},{"id":12,"name":"Delhi High Court Extension Counter SO","hpo":"Indraprastha HPO"},{"id":13,"name":"Delhi High Court SO","hpo":"Indraprastha HPO"},{"id":14,"name":"Desh Bandhu Gupta Road SO","hpo":"New Delhi HO"},{"id":15,"name":"Election Commission SO","hpo":"Sansad Marg HPO"},{"id":16,"name":"Gandhi Smarak Nidhi SO","hpo":"Indraprastha HPO"},{"id":17,"name":"Guru Gobind Singh Marg SO","hpo":"New Delhi HO"},{"id":18,"name":"IARI SO","hpo":"New Delhi HO"},{"id":19,"name":"Inderpuri SO","hpo":"New Delhi HO"},{"id":20,"name":"Indraprastha HO","hpo":"Indraprastha HPO"},{"id":21,"name":"IPEstate SO","hpo":"Indraprastha HPO"},{"id":22,"name":"Jama Masjid SO","hpo":"Indraprastha HPO"},{"id":23,"name":"Karol Bagh SO","hpo":"New Delhi HO"},{"id":24,"name":"Krishi Bhawan SO","hpo":"Sansad Marg HPO"},{"id":25,"name":"Lady Harding Medical College SO","hpo":"Sansad Marg HPO"},{"id":26,"name":"Minto Road SO","hpo":"Indraprastha HPO"},{"id":27,"name":"Multani Dhanda SO","hpo":"New Delhi HO"},{"id":28,"name":"National Physical Laboratory SO","hpo":"New Delhi HO"},{"id":29,"name":"NGT EXTENSION COUNTER","hpo":"Indraprastha HPO"},{"id":30,"name":"Nirman Bhawan SO","hpo":"Sansad Marg HPO"},{"id":31,"name":"North Avenue SO","hpo":"Sansad Marg HPO"},{"id":32,"name":"Pahar Ganj SO","hpo":"New Delhi HO"},{"id":33,"name":"Pandara Road SO","hpo":"Indraprastha HPO"},{"id":34,"name":"Parliament House SO","hpo":"Sansad Marg HPO"},{"id":35,"name":"Patel Nagar East SO","hpo":"New Delhi HO"},{"id":36,"name":"Patel Nagar SO Central Delhi","hpo":"New Delhi HO"},{"id":37,"name":"Patel Nagar South SO","hpo":"New Delhi HO"},{"id":38,"name":"Patel Nagar West SO","hpo":"New Delhi HO"},{"id":39,"name":"Patiala House SO","hpo":"Indraprastha HPO"},{"id":40,"name":"Pragati Maidan SO","hpo":"Indraprastha HPO"},{"id":41,"name":"Rail Bhawan SO","hpo":"Sansad Marg HPO"},{"id":42,"name":"Rajender Nagar SO","hpo":"New Delhi HO"},{"id":43,"name":"Rashtrapati Bhawan SO","hpo":"Sansad Marg HPO"},{"id":44,"name":"Rouse Avenue Extension Counter SO","hpo":"Indraprastha HPO"},{"id":45,"name":"Sansad Marg HO","hpo":"Sansad Marg HPO"},{"id":46,"name":"Sansadiya Soudh SO","hpo":"Sansad Marg HPO"},{"id":47,"name":"Sat Nagar SO","hpo":"New Delhi HO"},{"id":48,"name":"Secretariat North SO","hpo":"Sansad Marg HPO"},{"id":49,"name":"Shastri Bhawan SO","hpo":"Sansad Marg HPO"},{"id":50,"name":"South Avenue SO","hpo":"Sansad Marg HPO"},{"id":51,"name":"SRT NAGAR EXTENSION COUNTER","hpo":"New Delhi HO"},{"id":52,"name":"Supreme Court SO","hpo":"Indraprastha HPO"},{"id":53,"name":"Swami Ram Tirth Nagar SO","hpo":"New Delhi HO"},{"id":54,"name":"Udyog Bhawan SO","hpo":"Sansad Marg HPO"},{"id":55,"name":"Union Public Service Commission SO","hpo":"Sansad Marg HPO"}];
 
@@ -49,7 +49,7 @@ export default {
       return json({ products: PRODUCTS });
     }
 
-    // 3. API: Existing Submission Check
+    // 3. API: Check Existing Submission
     if (pathname === "/api/submission") {
       const officeId = searchParams.get("office_id");
       const date = searchParams.get("date");
@@ -234,7 +234,7 @@ export default {
       }
     }
 
-    // 6. API: WhatsApp Formatted Text
+    // 6. API: WhatsApp Formatted Text (Optimized to prevent misalignment)
     if (pathname === "/api/whatsapp-text") {
       const date = searchParams.get("date") || new Date().toISOString().substring(0, 10);
       const dashReq = new Request(`${url.origin}/api/dashboard?date=${date}`);
@@ -251,36 +251,29 @@ export default {
         "*DAILY SAVINGS & IPPB PERFORMANCE REPORT*",
         `📅 *Date: ${displayDate}*`,
         "━━━━━━━━━━━━━━━━━━━━━━",
-        `📊 *Reporting Status:* ${m.submitted_count} / ${m.total_offices} Offices`,
+        `📊 *Status:* ${m.submitted_count} / ${m.total_offices} Offices (${m.completion_pct}%)`,
         `⏳ *Pending Offices:* ${m.pending_count}`,
-        `📈 *Completion Rate:* ${m.completion_pct}%`,
         "━━━━━━━━━━━━━━━━━━━━━━",
         "",
-        "💰 *SAVINGS / POSB PERFORMANCE*",
-        "┌────────┬────────┬────────┐",
-        "│ *Scheme* │ *Opened* │ *Closed* │",
-        "├────────┼────────┼────────┤"
+        "💰 *SAVINGS / POSB PERFORMANCE (Opened | Closed)*"
       ];
 
       for (const p of dash.consolidated_products) {
         if (p.sec === "SAVINGS") {
-          const sname = (p.short + "      ").substring(0, 6);
           if (p.mode === "CLOSED_ONLY") {
-            lines.push(`│ ${sname} │   --   │  ${String(p.total_closed).padStart(5, " ")} │`);
+            lines.push(`• ${p.short}: *--* | *${p.total_closed}*`);
           } else {
-            lines.push(`│ ${sname} │  ${String(p.total_opened).padStart(5, " ")} │  ${String(p.total_closed).padStart(5, " ")} │`);
+            lines.push(`• ${p.short}: *${p.total_opened}* | *${p.total_closed}*`);
           }
         }
       }
 
       lines.push(
-        "├────────┼────────┼────────┤",
-        `│ *TOTAL*  │ *${String(m.total_savings_opened).padStart(5, " ")}* │ *${String(m.total_savings_closed).padStart(5, " ")}* │`,
-        "└────────┴────────┴────────┘",
+        `👉 *Total Savings:* *${m.total_savings_opened} Opened* | *${m.total_savings_closed} Closed*`,
         "",
         "📱 *IPPB PERFORMANCE*",
-        `• *Accounts Opened:* ${m.total_ippb_opened}`,
-        `• *Accounts Closed:* ${m.total_ippb_closed}`,
+        `• Accounts Opened: *${m.total_ippb_opened}*`,
+        `• Accounts Closed: *${m.total_ippb_closed}*`,
         "--- Activities / Services ---"
       );
 
@@ -290,8 +283,8 @@ export default {
         }
       }
 
-      lines.push("", "━━━━━━━━━━━━━━━━━━━━━━", "Generated via Divisional Reporting Portal");
-      return json({ text: lines.join("\\n") });
+      lines.push("", "━━━━━━━━━━━━━━━━━━━━━━", "_Divisional Office, New Delhi Central Division_");
+      return json({ text: lines.join("\n") });
     }
 
     // 7. API: CSV Export
@@ -324,7 +317,7 @@ export default {
         rows.push(line.map((val) => `"${val}"`).join(","));
       }
 
-      return new Response(rows.join("\\n"), {
+      return new Response(rows.join("\n"), {
         headers: {
           "Content-Type": "text/csv; charset=utf-8",
           "Content-Disposition": `attachment; filename=Savings_Performance_${date}.csv`
@@ -807,18 +800,41 @@ function renderAdminPage() {
 }
 
 function renderReportPage() {
+  const reportSpecificCss = `
+.rc-box { background:#FFF; border:2px solid var(--primary); border-radius:12px; max-width:620px; margin:0 auto 24px auto; overflow:hidden; box-shadow:0 8px 16px rgba(0,0,0,0.08); }
+.rc-head { background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%); color:#FFF; text-align:center; padding:18px 14px; }
+.rc-pill { display:inline-block; background:var(--secondary); color:#1E293B; font-size:0.75rem; font-weight:800; padding:3px 12px; border-radius:12px; margin-bottom:6px; letter-spacing:0.5px; }
+.rc-title { font-size:1.25rem; font-weight:800; letter-spacing:0.5px; }
+.rc-subtitle { font-size:0.95rem; font-weight:600; opacity:0.95; }
+.rc-date { font-size:0.85rem; color:#FDE68A; margin-top:3px; font-weight:600; }
+.rc-kpi-bar { background:#FFFBEB; border-bottom:2px dashed #F8B133; padding:10px 14px; display:flex; justify-content:space-around; text-align:center; }
+.rc-kpi-num { font-size:1.35rem; font-weight:800; }
+.rc-kpi-lbl { font-size:0.7rem; font-weight:700; color:#78350F; text-transform:uppercase; }
+.rc-sec-hdr { background:#F1F5F9; border-left:4px solid var(--primary); padding:5px 10px; font-size:0.82rem; font-weight:700; color:#1E293B; text-transform:uppercase; margin:14px 14px 6px 14px; }
+.rc-tbl { width:calc(100% - 28px); margin:0 14px 10px 14px; border-collapse:collapse; font-size:0.86rem; }
+.rc-tbl th { background:#FAFAFA; border-bottom:2px solid #E2E8F0; padding:6px 8px; font-size:0.78rem; font-weight:700; color:var(--muted); text-align:center; }
+.rc-tbl th:first-child { text-align:left; }
+.rc-tbl td { border-bottom:1px solid #F1F5F9; padding:6px 8px; text-align:center; }
+.rc-tbl td:first-child { text-align:left; font-weight:600; }
+.rc-tot-row { background:#FFF1F2; font-weight:800; border-top:2px solid #FDA4AF; }
+.rc-tot-row td:first-child { color:var(--primary); }
+.rc-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:0 14px 14px 14px; }
+.rc-badge-card { background:#F8FAFC; border:1px solid var(--border); padding:6px 10px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; font-size:0.82rem; }
+.rc-foot { text-align:center; background:#F8FAFC; border-top:1px solid var(--border); padding:8px; font-size:0.72rem; color:var(--muted); }
+`;
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daily Performance Report Card</title>
-  <style>` + PAGE_CSS + `</style>
+  <title>Daily Performance Report Card - New Delhi Central Division</title>
+  <style>` + PAGE_CSS + reportSpecificCss + `</style>
 </head>
 <body>
   <header class="header-bar">
     <div class="brand">
       <div class="brand-icon">WHATSAPP</div>
-      <div><div class="brand-title">Daily Performance Report Card</div><div class="brand-sub">WhatsApp Formats</div></div>
+      <div><div class="brand-title">Daily Performance Report Card</div><div class="brand-sub">1-Click Image & Clean Text Formats</div></div>
     </div>
     <div style="display:flex; gap:10px;">
       <a href="/admin" class="nav-btn">📊 Admin Dashboard</a>
@@ -832,29 +848,262 @@ function renderReportPage() {
         <label style="margin:0; font-weight:700;">Date:</label>
         <input type="date" id="repDate" class="form-control" style="width:auto; padding:5px 10px;" onchange="loadRep()">
       </div>
-      <button class="btn btn-primary" onclick="copyWAText()">📋 Copy WhatsApp Text</button>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="downloadPNG()">🖼️ Download as PNG</button>
+        <button class="btn btn-outline" onclick="copyWAText()">📋 Copy Clean Text</button>
+      </div>
     </div>
 
-    <div class="card" style="max-width:650px; margin:0 auto;">
-      <div class="card-title"><span>💬 Formatted WhatsApp Text</span><button class="btn btn-outline" style="padding:3px 8px; font-size:0.8rem;" onclick="copyWAText()">Copy</button></div>
-      <textarea id="waPreview" class="form-control" rows="18" readonly style="font-family:monospace; font-size:0.85rem; background:#F8FAFC;"></textarea>
+    <!-- The Exact Visual Screenshot Block -->
+    <div class="rc-box" id="reportCardBlock">
+      <div class="rc-head">
+        <div class="rc-pill">DEPARTMENT OF POSTS • INDIA POST</div>
+        <div class="rc-title">NEW DELHI CENTRAL DIVISION</div>
+        <div class="rc-subtitle">DAILY SAVINGS & IPPB PERFORMANCE REPORT</div>
+        <div class="rc-date">Reporting Date: <strong id="rcDateText">--</strong></div>
+      </div>
+
+      <div class="rc-kpi-bar">
+        <div><div class="rc-kpi-lbl">Offices Reported</div><div class="rc-kpi-num" style="color:#B45309;" id="rcRep">0 / 55</div></div>
+        <div><div class="rc-kpi-lbl">Pending Offices</div><div class="rc-kpi-num" style="color:var(--red);" id="rcPend">55</div></div>
+        <div><div class="rc-kpi-lbl">Completion Rate</div><div class="rc-kpi-num" style="color:var(--blue);" id="rcPct">0%</div></div>
+      </div>
+
+      <div class="rc-sec-hdr">1. SAVINGS / POSB PERFORMANCE</div>
+      <table class="rc-tbl">
+        <thead><tr><th>Scheme Name</th><th>Opened</th><th>Closed</th></tr></thead>
+        <tbody id="rcSavingsBody"></tbody>
+      </table>
+
+      <div class="rc-sec-hdr" style="border-left-color:var(--amber);">2. IPPB ACCOUNTS</div>
+      <table class="rc-tbl">
+        <thead><tr><th>Account Type</th><th>Opened</th><th>Closed</th></tr></thead>
+        <tbody id="rcIppbBody"></tbody>
+      </table>
+
+      <div class="rc-sec-hdr" style="border-left-color:var(--blue); margin-top:8px;">3. IPPB SERVICES & BUSINESS ACHIEVEMENTS</div>
+      <div class="rc-grid-2" id="rcServicesGrid"></div>
+
+      <div class="rc-foot">
+        Administrative Office, New Delhi Central Division • India Post
+      </div>
+    </div>
+
+    <canvas id="exportCanvas" style="display:none;"></canvas>
+
+    <div class="card" style="max-width:620px; margin:0 auto;">
+      <div class="card-title"><span>💬 Clean Text Format (No Alignment Issues)</span>
+        <button class="btn btn-outline" style="padding:3px 8px; font-size:0.8rem;" onclick="copyWAText()">Copy Text</button>
+      </div>
+      <textarea id="waPreview" class="form-control" rows="14" readonly style="font-family:sans-serif; font-size:0.85rem; background:#F8FAFC;"></textarea>
     </div>
   </main>
 
   <script>
+    let reportData = null;
+
     document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('repDate').value = new Date().toISOString().substring(0, 10);
       loadRep();
     });
+
     async function loadRep() {
       const dt = document.getElementById('repDate').value;
-      const res = await fetch('/api/whatsapp-text?date=' + dt);
-      const d = await res.json();
-      document.getElementById('waPreview').value = d.text;
+      const parts = dt.split('-');
+      const displayDate = parts.length === 3 ? (parts + '.' + parts + '.' + parts[0]) : dt;
+      document.getElementById('rcDateText').innerText = displayDate;
+
+      try {
+        const [dashRes, waRes] = await Promise.all([
+          fetch('/api/dashboard?date=' + dt).then(r => r.json()),
+          fetch('/api/whatsapp-text?date=' + dt).then(r => r.json())
+        ]);
+        reportData = dashRes;
+        document.getElementById('waPreview').value = waRes.text;
+
+        const m = dashRes.metrics;
+        document.getElementById('rcRep').innerText = m.submitted_count + ' / ' + m.total_offices;
+        document.getElementById('rcPend').innerText = m.pending_count;
+        document.getElementById('rcPct').innerText = m.completion_pct + '%';
+
+        // Savings rows
+        const sb = document.getElementById('rcSavingsBody');
+        let sHtml = '';
+        dashRes.consolidated_products.filter(p => p.sec === 'SAVINGS').forEach(p => {
+          sHtml += '<tr><td>' + p.name + ' (' + p.short + ')</td><td>' + (p.mode === 'CLOSED_ONLY' ? '<span style="color:var(--muted);">--</span>' : '<strong>' + p.total_opened + '</strong>') + '</td><td><strong>' + p.total_closed + '</strong></td></tr>';
+        });
+        sHtml += '<tr class="rc-tot-row"><td>TOTAL SAVINGS / POSB</td><td style="color:var(--primary); font-size:0.95rem;">' + m.total_savings_opened + '</td><td style="color:#991B1B; font-size:0.95rem;">' + m.total_savings_closed + '</td></tr>';
+        sb.innerHTML = sHtml;
+
+        // IPPB Accounts
+        const ib = document.getElementById('rcIppbBody');
+        let iHtml = '';
+        dashRes.consolidated_products.filter(p => p.sec === 'IPPB' && p.mode === 'OPENED_AND_CLOSED').forEach(p => {
+          iHtml += '<tr><td>' + p.name + '</td><td><strong>' + p.total_opened + '</strong></td><td><strong>' + p.total_closed + '</strong></td></tr>';
+        });
+        iHtml += '<tr class="rc-tot-row" style="background:#FEF3C7; border-top-color:#FCD34D;"><td>TOTAL IPPB ACCOUNTS</td><td style="color:#B45309;">' + m.total_ippb_opened + '</td><td style="color:#991B1B;">' + m.total_ippb_closed + '</td></tr>';
+        ib.innerHTML = iHtml;
+
+        // IPPB Services
+        const sg = document.getElementById('rcServicesGrid');
+        sg.innerHTML = dashRes.consolidated_products.filter(p => p.sec === 'IPPB' && p.mode === 'ACHIEVEMENT_COUNT').map(p => {
+          return '<div class="rc-badge-card"><span>' + p.name + '</span><strong style="color:var(--blue); font-size:0.95rem;">' + p.total_achievement + '</strong></div>';
+        }).join('');
+      } catch (err) {
+        console.error(err);
+      }
     }
+
     async function copyWAText() {
       await navigator.clipboard.writeText(document.getElementById('waPreview').value);
-      alert('📋 Formatted WhatsApp text copied to clipboard!');
+      alert('📋 Formatted WhatsApp text copied to clipboard! (Bullet points will align cleanly on any phone)');
+    }
+
+    function downloadPNG() {
+      if (!reportData) return;
+      const canvas = document.getElementById('exportCanvas');
+      const w = 1200, h = 1680;
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+
+      // Background
+      ctx.fillStyle = '#F8FAFC'; ctx.fillRect(0, 0, w, h);
+
+      // Card border box
+      const m = 30, cw = w - 60, ch = h - 60;
+      ctx.fillStyle = '#FFFFFF'; ctx.strokeStyle = '#C8102E'; ctx.lineWidth = 6;
+      ctx.beginPath(); ctx.roundRect(m, m, cw, ch, 20); ctx.fill(); ctx.stroke();
+
+      // Header Banner
+      ctx.save();
+      ctx.beginPath(); ctx.roundRect(m, m, cw, 190, [20, 20, 0, 0]); ctx.clip();
+      ctx.fillStyle = '#C8102E'; ctx.fillRect(m, m, cw, 190);
+
+      ctx.fillStyle = '#F8B133';
+      ctx.beginPath(); ctx.roundRect(w/2 - 180, m + 18, 360, 30, 15); ctx.fill();
+      ctx.fillStyle = '#1E293B'; ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('DEPARTMENT OF POSTS • INDIA POST', w/2, m + 38);
+
+      ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 30px sans-serif';
+      ctx.fillText('NEW DELHI CENTRAL DIVISION', w/2, m + 92);
+      ctx.font = '600 20px sans-serif';
+      ctx.fillText('DAILY SAVINGS & IPPB PERFORMANCE REPORT', w/2, m + 128);
+      ctx.font = '500 17px sans-serif'; ctx.fillStyle = '#FDE68A';
+      ctx.fillText('Reporting Date: ' + document.getElementById('rcDateText').innerText, w/2, m + 162);
+      ctx.restore();
+
+      // KPI Bar
+      const ky = m + 190;
+      ctx.fillStyle = '#FFFBEB'; ctx.fillRect(m, ky, cw, 100);
+      ctx.strokeStyle = '#FDE68A'; ctx.lineWidth = 2; ctx.strokeRect(m, ky, cw, 100);
+
+      const met = reportData.metrics;
+      ctx.fillStyle = '#78350F'; ctx.font = 'bold 14px sans-serif';
+      ctx.fillText('OFFICES REPORTED', m + cw * 0.16, ky + 34);
+      ctx.font = 'bold 32px sans-serif'; ctx.fillStyle = '#B45309';
+      ctx.fillText(met.submitted_count + ' / ' + met.total_offices, m + cw * 0.16, ky + 76);
+
+      ctx.fillStyle = '#78350F'; ctx.font = 'bold 14px sans-serif';
+      ctx.fillText('PENDING OFFICES', w/2, ky + 34);
+      ctx.font = 'bold 32px sans-serif'; ctx.fillStyle = met.pending_count > 0 ? '#DC2626' : '#16A34A';
+      ctx.fillText(met.pending_count, w/2, ky + 76);
+
+      ctx.fillStyle = '#78350F'; ctx.font = 'bold 14px sans-serif';
+      ctx.fillText('COMPLETION RATE', m + cw * 0.83, ky + 34);
+      ctx.font = 'bold 32px sans-serif'; ctx.fillStyle = '#2563EB';
+      ctx.fillText(met.completion_pct + '%', m + cw * 0.83, ky + 76);
+
+      // Section 1: Savings Table
+      let curY = ky + 130;
+      ctx.fillStyle = '#C8102E'; ctx.fillRect(m + 30, curY, 8, 26);
+      ctx.fillStyle = '#0F172A'; ctx.font = 'bold 19px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('1. SAVINGS / POSB PERFORMANCE', m + 46, curY + 20);
+
+      curY += 36;
+      const tx = m + 30, tw = cw - 60;
+      ctx.fillStyle = '#F1F5F9'; ctx.fillRect(tx, curY, tw, 34);
+      ctx.fillStyle = '#475569'; ctx.font = 'bold 15px sans-serif';
+      ctx.fillText('SCHEME / CERTIFICATE', tx + 18, curY + 22);
+      ctx.textAlign = 'center';
+      ctx.fillText('OPENED', tx + tw * 0.65, curY + 22);
+      ctx.fillText('CLOSED', tx + tw * 0.88, curY + 22);
+
+      curY += 34;
+      reportData.consolidated_products.filter(p => p.sec === 'SAVINGS').forEach((p, i) => {
+        ctx.fillStyle = i % 2 === 0 ? '#FFFFFF' : '#F8FAFC'; ctx.fillRect(tx, curY, tw, 30);
+        ctx.textAlign = 'left'; ctx.fillStyle = '#1E293B'; ctx.font = '600 15px sans-serif';
+        ctx.fillText(p.short + ' - ' + p.name.split('(')[0], tx + 18, curY + 20);
+        ctx.textAlign = 'center'; ctx.fillStyle = '#0F172A'; ctx.font = 'bold 15px sans-serif';
+        ctx.fillText(p.mode === 'CLOSED_ONLY' ? '--' : p.total_opened, tx + tw * 0.65, curY + 20);
+        ctx.fillText(p.total_closed, tx + tw * 0.88, curY + 20);
+        curY += 30;
+      });
+
+      // Total POSB
+      ctx.fillStyle = '#FFF1F2'; ctx.fillRect(tx, curY, tw, 36);
+      ctx.textAlign = 'left'; ctx.fillStyle = '#9E0C24'; ctx.font = 'bold 17px sans-serif';
+      ctx.fillText('TOTAL SAVINGS', tx + 18, curY + 24);
+      ctx.textAlign = 'center'; ctx.fillStyle = '#C8102E'; ctx.font = 'bold 19px sans-serif';
+      ctx.fillText(met.total_savings_opened, tx + tw * 0.65, curY + 25);
+      ctx.fillStyle = '#991B1B'; ctx.fillText(met.total_savings_closed, tx + tw * 0.88, curY + 25);
+
+      // Section 2: IPPB
+      curY += 56;
+      ctx.fillStyle = '#F59E0B'; ctx.fillRect(m + 30, curY, 8, 26);
+      ctx.fillStyle = '#0F172A'; ctx.font = 'bold 19px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('2. IPPB PERFORMANCE', m + 46, curY + 20);
+
+      curY += 36;
+      ctx.fillStyle = '#F1F5F9'; ctx.fillRect(tx, curY, tw, 32);
+      ctx.fillStyle = '#475569'; ctx.font = 'bold 15px sans-serif';
+      ctx.fillText('IPPB ACCOUNT TYPE', tx + 18, curY + 22);
+      ctx.textAlign = 'center';
+      ctx.fillText('OPENED', tx + tw * 0.65, curY + 22);
+      ctx.fillText('CLOSED', tx + tw * 0.88, curY + 22);
+
+      curY += 32;
+      reportData.consolidated_products.filter(p => p.sec === 'IPPB' && p.mode === 'OPENED_AND_CLOSED').forEach((p, i) => {
+        ctx.fillStyle = i % 2 === 0 ? '#FFFFFF' : '#F8FAFC'; ctx.fillRect(tx, curY, tw, 30);
+        ctx.textAlign = 'left'; ctx.fillStyle = '#1E293B'; ctx.font = '600 15px sans-serif';
+        ctx.fillText(p.name, tx + 18, curY + 20);
+        ctx.textAlign = 'center'; ctx.fillStyle = '#0F172A'; ctx.font = 'bold 15px sans-serif';
+        ctx.fillText(p.total_opened, tx + tw * 0.65, curY + 20);
+        ctx.fillText(p.total_closed, tx + tw * 0.88, curY + 20);
+        curY += 30;
+      });
+
+      // IPPB Services Grid
+      curY += 46;
+      ctx.textAlign = 'left'; ctx.fillStyle = '#475569'; ctx.font = 'bold 14px sans-serif';
+      ctx.fillText('IPPB SERVICES & BUSINESS ACHIEVEMENTS', tx, curY);
+
+      curY += 14;
+      const services = reportData.consolidated_products.filter(p => p.sec === 'IPPB' && p.mode === 'ACHIEVEMENT_COUNT');
+      const tileW = (tw - 16) / 2;
+      services.forEach((s, i) => {
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const stx = tx + col * (tileW + 16);
+        const sty = curY + row * 46;
+        ctx.fillStyle = '#F8FAFC'; ctx.strokeStyle = '#CBD5E1'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.roundRect(stx, sty, tileW, 38, 8); ctx.fill(); ctx.stroke();
+        ctx.textAlign = 'left'; ctx.font = '600 14px sans-serif'; ctx.fillStyle = '#1E293B';
+        ctx.fillText(s.name, stx + 12, sty + 24);
+        ctx.textAlign = 'right'; ctx.font = 'bold 17px sans-serif'; ctx.fillStyle = '#1E40AF';
+        ctx.fillText(s.total_achievement, stx + tileW - 14, sty + 25);
+      });
+
+      // Footer
+      const fy = h - m - 36;
+      ctx.strokeStyle = '#E2E8F0'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(m, fy); ctx.lineTo(m + cw, fy); ctx.stroke();
+      ctx.textAlign = 'center'; ctx.fillStyle = '#64748B'; ctx.font = '13px sans-serif';
+      ctx.fillText('Administrative Office, New Delhi Central Division • India Post', w/2, fy + 22);
+
+      const a = document.createElement('a');
+      a.download = 'Savings_Performance_NDCD_' + reportData.report_date + '.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
     }
   </script>
 </body>
